@@ -1,0 +1,12 @@
+<p>Dear {{ user.first_name }},</p>
+<br/>
+<p>An account has been created for you at {{ config.BASE_URL }}.</p>
+<p>To activate your account, follow <a href="{{ config.ACTIVATE_URL }}/{{ user.auth_code }}" target="_blank">this</a> link, and then set a password for your account.</p>
+<p>
+    <span>Alternatively, you can paste the following link in your browser's address bar:</span>
+    <br/>
+    <span>{{ config.ACTIVATE_URL }}/{{ user.auth_code }}</span>
+</p>
+<br/>
+<p>Regards,</p>
+<p>{{ config.PRETTY_URL }}</p>

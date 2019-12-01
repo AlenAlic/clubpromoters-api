@@ -1,0 +1,65 @@
+# Requests
+GET = "GET"
+POST = "POST"
+PATCH = "PATCH"
+PUT = "PUT"
+DELETE = "DELETE"
+
+
+# Responses
+OK = "", 200
+NO_CONTENT = "", 204
+BAD_REQUEST = "", 400
+UNAUTHORIZED = "", 401
+FORBIDDEN = "", 403
+NOT_FOUND = "", 404
+PAYLOAD_TOO_LARGE = "", 413
+SERVER_ERROR = "", 500
+SERVER_OFFLINE = "", 503
+SERVER_TIMEOUT = "", 504
+
+
+# Second conversions
+SECONDS_QUARTER = 900
+SECONDS_DAY = 86400
+SECONDS_MONTH = 2592000
+SECONDS_YEAR = 31536000
+
+
+# Security
+MINIMAL_PASSWORD_LENGTH = 12
+
+
+# Access levels
+AL_ADMIN = 0
+AL_ORGANIZER = 10
+AL_CLUB_OWNER = 20
+AL_HOSTESS = 21
+AL_PROMOTER = 30
+
+
+# Date related
+DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+
+
+NO = 'No'
+YES = 'Yes'
+TF = {True: YES, False: NO}
+
+
+NORMAL = "Normal"
+
+STATUS_OPEN = 'open'
+STATUS_PENDING = 'pending'
+STATUS_CANCELED = 'canceled'
+STATUS_EXPIRED = 'expired'
+STATUS_FAILED = 'failed'
+STATUS_PAID = 'paid'
+STATUS_AUTHORIZED = 'authorized'
+HOLD_STATUS = [STATUS_PAID, STATUS_OPEN, STATUS_PENDING, STATUS_AUTHORIZED]
+
+
+PLACEHOLDER_URL = "/static/placeholder.png"
+UPLOAD_FOLDER = 'uploads'
+IMAGE = 'image'
+LOGO = 'logo'

@@ -1,0 +1,13 @@
+Dear {{ user.first_name }},
+
+
+An account has been created for you at {{ config.BASE_URL }}.
+
+To activate your account, paste the following link in your browser's address bar, and then set a password for your account:
+
+{{ config.ACTIVATE_URL }}/{{ user.auth_code }}
+
+
+Regards,
+
+{{ config.PRETTY_URL }}

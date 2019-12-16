@@ -138,7 +138,7 @@ bash -c 'cat > scripts/update' << EOL
 cd clubpromoters-api
 
 echo "Creating database backup===="
-./cron/hourly
+./cron/weekly
 echo "========================Done"
 
 echo "Checking out new version===="

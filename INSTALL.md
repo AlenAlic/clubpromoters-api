@@ -26,6 +26,7 @@ Make sure you have the following DNS records available:
 |@|A|\<your ipv4 adress\>|
 |@|AAAA|\<your ipv6 adress\>|
 |api|CNAME|@|
+|test|CNAME|@|
 |test.api|CNAME|@|
 
 

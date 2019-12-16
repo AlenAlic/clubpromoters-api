@@ -29,7 +29,7 @@ sudo apt install -y software-properties-common
 sudo add-apt-repository -y universe
 sudo add-apt-repository -y ppa:certbot/certbot
 sudo apt install -y certbot python-certbot-nginx
-sudo certbot certonly --nginx -d api.$DOMAIN -d test.api.$DOMAIN
+sudo certbot certonly --nginx -d $DOMAIN -d api.$DOMAIN -d test.$DOMAIN -d test.api.$DOMAIN
 echo "Installing SSL certificate complete==========="
 
 

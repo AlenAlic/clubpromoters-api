@@ -58,6 +58,13 @@ MAIL_DEFAULT_SENDER = "no-reply@$DOMAIN"
 
 PRETTY_URL = "test.$DOMAIN"
 ALLOWED_URLS = ["https://test.$DOMAIN"]
+
+MAIL_SERVER = "$DOMAIN"
+MAIL_PORT = 587
+MAIL_USE_TLS = 1
+MAIL_USERNAME = "no-reply@$DOMAIN"
+MAIL_PASSWORD = "$TEST_EMAIL_PASSWORD"
+
 EOL
 echo "Setting environment variables done============"
 
@@ -110,8 +117,8 @@ server {
     access_log /var/log/test.api.$DOMAIN.access.log;
     error_log /var/log/test.api.$DOMAIN.error.log;
 
-    ssl_certificate /etc/letsencrypt/live/api.$DOMAIN/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/api.$DOMAIN/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/$DOMAIN/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/$DOMAIN/privkey.pem;
     include /etc/letsencrypt/options-ssl-nginx.conf;
     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
     ssl_ecdh_curve secp521r1:secp384r1:prime256v1;

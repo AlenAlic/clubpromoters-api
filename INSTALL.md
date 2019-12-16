@@ -31,7 +31,7 @@ Make sure you have the following DNS records available:
 
 
 ### Installer instance
-We'll use an instance of the xTDS WebPortal to install the cluster.
+We'll use an instance of clubpromoters-api to install the cluster.
 
     git clone https://github.com/AlenAlic/clubpromoters-api
     cd clubpromoters-api
@@ -57,7 +57,7 @@ To install all the base dependencies, run the `install_base` script.
 
 
 #### LIVE
-Before installing the ETDS version, set the following environment variables:
+Before installing the LIVE version, set the following environment variables:
 
     export LIVE_EMAIL_PASSWORD=<password>
     export LIVE_DB_PASSWORD=$(python3 -c "import uuid; print(uuid.uuid4().hex)")
@@ -72,7 +72,7 @@ Finally, copy the `LIVE_DB_PASSWORD` and run the following command to create a l
 When prompted, paste the password and press Enter.
  
 #### TEST
-Before installing the NTDS version, set the following environment variables:
+Before installing the TEST version, set the following environment variables:
 
     export TEST_EMAIL_PASSWORD=<password>
     export TEST_DB_PASSWORD=$(python3 -c "import uuid; print(uuid.uuid4().hex)")
@@ -96,7 +96,7 @@ Go to the `FOLDER/clubpromoters-api` folder, activate the venv, and open up a fl
     
 Create the admin account, all configuration files and exit the shell:
 
-    create_admin("email", "password")
+    create_admin("email", "password", "first_name", "last_name")
     create_config()
     exit()
 

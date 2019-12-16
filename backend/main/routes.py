@@ -28,6 +28,8 @@ def active_parties():
 def homepage_parties():
     parties = Party.query.filter(Party.is_active.is_(True), Party.party_end_datetime > datetime.utcnow())\
         .order_by(Party.party_start_datetime, Party.party_id).all()
+    if len(parties) == 0:
+        return jsonify([])
     min_date = min([p.party_start_datetime for p in parties])
     parties = [p for p in parties if p.party_start_datetime == min_date]
     return jsonify([p.json() for p in parties])

@@ -79,9 +79,9 @@ echo "Database migration complete==================="
 
 
 echo "Setting up supervisor========================="
-sudo bash -c 'cat > /etc/supervisor/conf.d/clubpromoters_test.conf' << EOL
-[program:clubpromoters_test]
-command=/home/$USER/$TEST_FOLDER/clubpromoters-api/venv/bin/gunicorn -b 127.0.0.1:8100 -w 2 run:app
+sudo bash -c 'cat > /etc/supervisor/conf.d/clubpromoters_test_api.conf' << EOL
+[program:clubpromoters_test_api]
+command=/home/$USER/$TEST_FOLDER/clubpromoters-api/venv/bin/gunicorn -b 127.0.0.1:4041 -w 2 run:app
 directory=/home/$USER/$TEST_FOLDER/clubpromoters-api
 user=$USER
 autostart=true
@@ -100,7 +100,7 @@ server {
     server_name test.api.$DOMAIN;
 
     location / {
-        proxy_pass http://127.0.0.1:8100;
+        proxy_pass http://127.0.0.1:4041;
         proxy_redirect off;
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
@@ -150,7 +150,7 @@ deactivate
 echo "========================Done"
 
 echo "Restarting Services========="
-sudo supervisorctl restart clubpromoters_test
+sudo supervisorctl restart clubpromoters_test_api
 sudo systemctl reload nginx
 echo "========================Done"
 

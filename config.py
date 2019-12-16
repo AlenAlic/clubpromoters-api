@@ -26,13 +26,16 @@ class Config(object):
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD') or ''
     MAIL_DEFAULT_SENDER = os.environ.get('MAIL_DEFAULT_SENDER') or 'email@example.com'
 
-    PRETTY_URL = os.environ.get('PRETTY_URL') or "example.com"
+    PRETTY_URL = os.environ.get('PRETTY_URL') or "127.0.0.1:8080"
     BASE_URL = "https://" + PRETTY_URL
     ACTIVATE_URL = BASE_URL + "/auth/activate"
     RESET_URL = BASE_URL + "/auth/password/reset"
 
     allowed_urls = os.environ.get("ALLOWED_URLS")
     ALLOWED_URLS = json.loads(allowed_urls) if allowed_urls else ["http://127.0.0.1:8080"]
+
+    # For development only, the Mollie API key is set in the config
+    MOLLIE_API_KEY = os.environ.get('MOLLIE_API_KEY')
 
 
 # MAIL SERVERS

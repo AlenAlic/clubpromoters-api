@@ -1,5 +1,5 @@
 from backend import db, login, Anonymous
-from flask import current_app, url_for
+from flask import current_app, url_for, request
 from flask_login import UserMixin, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from backend.values import *
@@ -10,6 +10,20 @@ from functools import wraps
 from hashlib import sha3_256
 import pyqrcode
 import os
+import urllib.parse
+
+
+def datetime_browser(dt):
+    return dt.strftime(DATETIME_FORMAT)
+
+
+def format_euro(price):
+    if price > 0:
+        p = '€{:,.2f}'.format(price)
+        p = p.replace(".00", "")
+        return p
+    else:
+        return '€0'
 
 
 # Table names
@@ -38,9 +52,9 @@ def requires_access_level(access_levels):
 def code_required(view):
     @wraps(view)
     def wrapped_view(**kwargs):
-        # if "code" not in session:
-        #     flash("Cannot enter page without a valid code.")
-        #     return redirect(url_for('main.index'))
+        code = get_code_from_request(request)
+        if code is None:
+            return PRECONDITION_REQUIRED
         return view(**kwargs)
     return wrapped_view
 
@@ -59,15 +73,20 @@ class TrackModifications(object):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
-def get_token_from_request(request):
-    token = request.headers.get("Authorization").replace("Bearer ", "")
+def get_token_from_request(req):
+    token = req.headers.get("Authorization").replace("Bearer ", "")
     return jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=['HS256'])
 
 
+def get_code_from_request(req):
+    code = req.headers.get("Code")
+    return Code.query.filter(Code.active.is_(True), Code.code == code).first()
+
+
 @login.request_loader
-def load_user(request):
+def load_user(req):
     try:
-        data = get_token_from_request(request)
+        data = get_token_from_request(req)
         user_id = data["id"]
         reset_index = data["reset_index"]
     except (jwt.exceptions.InvalidTokenError, AttributeError, KeyError):
@@ -80,6 +99,7 @@ class User(UserMixin, Anonymous, db.Model, TrackModifications):
     __tablename__ = "users"
     user_id = db.Column(db.Integer, primary_key=True)
     reset_index = db.Column(db.Integer, nullable=False, default=0)
+    club = db.Column(db.String(128), nullable=True)
     email = db.Column(db.String(128), index=True, unique=True)
     password_hash = db.Column(db.String(128))
     access = db.Column(db.Integer, index=True, nullable=False)
@@ -89,17 +109,21 @@ class User(UserMixin, Anonymous, db.Model, TrackModifications):
     last_name = db.Column(db.String(128))
     auth_code = db.Column(db.String(128), nullable=True)
     code = db.relationship('Code', back_populates='user', uselist=False)
-    hostess_id = db.Column(db.Integer, db.ForeignKey('users.user_id'))
+    club_owner_id = db.Column(db.Integer, db.ForeignKey('users.user_id'))
     hostesses = db.relationship("User", backref=db.backref('club_owner', remote_side=[user_id]))
     parties = db.relationship('Party', back_populates='club_owner')
     purchases = db.relationship('Purchase', back_populates='promoter')
     commission = db.Column(db.Integer, nullable=False, default=0)
+    working = db.Column(db.Boolean, nullable=True, default=False)
 
     def __repr__(self):
         return f'{self.email}'
 
     def get_id(self):
         return f"{self.user_id}-{self.reset_index}"
+
+    def full_name(self):
+        return f"{self.first_name} {self.last_name}"
 
     def is_admin(self):
         return self.access == AL_ADMIN
@@ -145,6 +169,7 @@ class User(UserMixin, Anonymous, db.Model, TrackModifications):
             'id': self.user_id,
             "reset_index": self.reset_index,
             "email": self.email,
+            "access": self.access,
             "first_name": self.first_name,
             "last_name": self.last_name,
             'iat': time(),
@@ -162,6 +187,77 @@ class User(UserMixin, Anonymous, db.Model, TrackModifications):
             }
         return None
 
+    def json(self):
+        data = {
+            'id': self.user_id,
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "name": self.full_name(),
+            "email": self.email,
+            "access": self.access,
+            "is_active": self.is_active,
+            "last_seen": self.last_seen,
+        }
+        if self.is_club_owner():
+            data.update({
+                "hostesses": [{
+                    "id": h.user_id,
+                    "email": h.email,
+                    "name": h.full_name(),
+                    "last_seen": h.last_seen,
+                    "is_active": h.is_active,
+                } for h in self.hostesses],
+                "commission": self.commission,
+                "club": self.club,
+            })
+        if self.is_promoter():
+            data.update({
+                "commission": self.commission,
+            })
+            if self.code is not None:
+                data.update({
+                    "code": self.code.json(),
+                })
+        if self.is_hostess():
+            data.update({
+                "working": self.working,
+            })
+        return data
+
+    def commissions_json(self, purchases):
+        data = {
+            'id': self.user_id,
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "name": self.full_name(),
+            "email": self.email,
+            "access": self.access,
+            "is_active": self.is_active,
+            "last_seen": self.last_seen,
+        }
+        total = 0
+        if self.is_promoter():
+            purchases = [p for p in purchases if p.promoter == self and p.status == STATUS_PAID]
+            total = sum([p.promoter_price() for p in purchases])
+            parties = Party.query.filter(Party.party_id.in_([p.party_id for p in purchases if p.promoter == self])) \
+                .order_by(Party.party_start_datetime).all()
+            data.update({
+                "parties": [p.promoter_finances(self) for p in parties]
+            })
+        if self.is_club_owner():
+            purchases = [p for p in purchases if p.party.club_owner == self and p.status == STATUS_PAID]
+            total = sum([p.club_owner_price() for p in purchases])
+            parties = Party.query.filter(Party.party_id.in_([p.party_id for p in purchases])) \
+                .order_by(Party.party_start_datetime).all()
+            data.update({
+                "club": self.club,
+                "parties": [p.club_owner_finances() for p in parties],
+            })
+        data.update({
+            "total": total,
+        })
+        return data
+
 
 class Configuration(db.Model, TrackModifications):
     __tablename__ = CONFIGURATION
@@ -171,9 +267,18 @@ class Configuration(db.Model, TrackModifications):
     default_club_owner_commission = db.Column(db.Integer, nullable=False, default=10)
     default_promoter_commission = db.Column(db.Integer, nullable=False, default=15)
     site_available = db.Column(db.Boolean, nullable=False, default=False)
+    test_email = db.Column(db.String(128))
 
     def allowed_file_types(self):
         return self.allowed_image_types.split(",")
+
+    def json(self):
+        return {
+            "default_club_owner_commission": self.default_club_owner_commission,
+            "default_promoter_commission": self.default_promoter_commission,
+            "mollie_api_key": self.mollie_api_key,
+            "test_email": self.test_email,
+        }
 
 
 party_file_table = db.Table(
@@ -204,12 +309,13 @@ class Party(db.Model, TrackModifications):
     # files = db.relationship('File', back_populates='party')
     files = db.relationship("File", secondary=party_file_table)
     club_owner_commission = db.Column(db.Integer, nullable=False, default=10)
+    promoter_commission = db.Column(db.Integer, nullable=False, default=15)
 
     def __repr__(self):
         return f"{self.title}"
 
     def set_ticket_price(self, price_float):
-        self.ticket_price = int(price_float * 100)
+        self.ticket_price = int(float(price_float) * 100)
 
     def get_ticket_price(self):
         return float(self.ticket_price)/100
@@ -226,6 +332,9 @@ class Party(db.Model, TrackModifications):
     def tickets_on_hold(self):
         return self.num_tickets_with_status(STATUS_PENDING) + self.num_tickets_with_status(STATUS_OPEN)
 
+    def tickets_denied_entry(self):
+        return len([t for p in self.purchases for t in p.tickets if t.denied_entry])
+
     def remaining_tickets(self):
         return self.num_available_tickets - self.sold_tickets() - self.tickets_on_hold()
 
@@ -240,11 +349,26 @@ class Party(db.Model, TrackModifications):
 
     def json(self):
         return {
-            "party_id": self.party_id,
+            "id": self.party_id,
             "title": self.title,
+            "club": self.club_owner.club,
             "ticket_price": self.get_ticket_price(),
-            'party_date': self.party_date(),
-            'party_time': self.party_time()
+            "num_available_tickets": self.num_available_tickets,
+            "start_date": datetime_browser(self.party_start_datetime),
+            "end_date": datetime_browser(self.party_end_datetime),
+            "club_owner_commission": self.club_owner_commission,
+            "promoter_commission": self.promoter_commission,
+            "image": self.image,
+            "logo": self.logo,
+            "sold_tickets": self.sold_tickets(),
+            "tickets_on_hold": self.tickets_on_hold(),
+            "remaining_tickets": self.remaining_tickets(),
+            "tickets_denied_entry": self.tickets_denied_entry(),
+            "party_income": self.party_income(),
+            "party_refunds": self.party_refunds(),
+            "party_promoter_cut": self.party_promoter_cut(),
+            "party_club_owner_cut": self.party_club_owner_cut(),
+            "party_profit": self.party_profit()
         }
 
     def purchases_with_status(self, status=""):
@@ -275,16 +399,24 @@ class Party(db.Model, TrackModifications):
             db.session.delete(file)
         db.session.commit()
 
-    # PromoterFinances
-    def promoter_finances_json(self):
+    def promoter_finances(self, user=current_user):
         return {
             "party_id": self.party_id,
             "title": self.title,
-            "party_date": self.party_date(),
-            "tickets": sum([p.promoter_tickets() for p in self.purchases if p.promoter == current_user]),
-            "price": sum([p.promoter_price() for p in self.purchases if p.promoter == current_user]),
-            "refund_tickets": sum([p.refunded_tickets() for p in self.purchases if p.promoter == current_user]),
-            "refund_price": sum([p.refunded_price() for p in self.purchases if p.promoter == current_user])
+            "tickets": sum([p.num_tickets() for p in self.purchases if p.promoter == user]),
+            "price": sum([p.promoter_price() for p in self.purchases if p.promoter == user]),
+            # "refund_tickets": sum([p.refunded_tickets() for p in self.purchases if p.promoter == user]),
+            # "refund_price": sum([p.refunded_price() for p in self.purchases if p.promoter == user])
+        }
+
+    def club_owner_finances(self):
+        return {
+            "party_id": self.party_id,
+            "title": self.title,
+            "tickets": sum([p.num_tickets() for p in self.purchases]),
+            "price": sum([p.club_owner_price() for p in self.purchases]),
+            # "refund_tickets": sum([p.refunded_tickets() for p in self.purchases if p.promoter == user]),
+            # "refund_price": sum([p.refunded_price() for p in self.purchases if p.promoter == user])
         }
 
     # PastParties
@@ -303,22 +435,6 @@ class Party(db.Model, TrackModifications):
     def party_profit(self):
         return self.party_income() - self.party_refunds() - self.party_promoter_cut() - self.party_club_owner_cut()
 
-    def past_party_json(self):
-        return {
-            "party_id": self.party_id,
-            "title": self.title,
-            "party_date": self.party_date(),
-            "party_time": self.party_time(),
-            "num_available_tickets": self.num_available_tickets,
-            "sold_tickets": self.sold_tickets(),
-            "remaining_tickets": self.remaining_tickets(),
-            "party_income": self.party_income(),
-            "party_refunds": self.party_refunds(),
-            "party_promoter_cut": self.party_promoter_cut(),
-            "party_club_owner_cut": self.party_club_owner_cut(),
-            "party_profit": self.party_profit()
-        }
-
 
 class Ticket(db.Model, TrackModifications):
     __tablename__ = TICKET
@@ -330,13 +446,27 @@ class Ticket(db.Model, TrackModifications):
     purchase_id = db.Column(db.Integer, db.ForeignKey(f"{PURCHASE}.purchase_id"))
     purchase = db.relationship('Purchase', back_populates='tickets', single_parent=True)
 
+    def available(self):
+        return not self.used and not self.denied_entry
+
+    def json(self):
+        return {
+            "id": self.ticket_id,
+            "used": self.used,
+            "denied_entry": self.denied_entry,
+            "available": self.available(),
+            "number": self.number,
+            "refunded": self.refunded,
+        }
+
 
 class Purchase(db.Model, TrackModifications):
     __tablename__ = PURCHASE
     purchase_id = db.Column(db.Integer, primary_key=True)
     price = db.Column(db.Integer, nullable=False, default=0)
     status = db.Column(db.String(128), nullable=False, default=STATUS_OPEN)
-    name = db.Column(db.String(128), nullable=False)
+    first_name = db.Column(db.String(128), nullable=False)
+    last_name = db.Column(db.String(128), nullable=False)
     email = db.Column(db.String(128), index=True, nullable=False)
     hash = db.Column(db.String(160), nullable=False, default="")
     mollie_payment_id = db.Column(db.String(128), nullable=False, default="")
@@ -354,6 +484,13 @@ class Purchase(db.Model, TrackModifications):
 
     def __repr__(self):
         return f"Purchase {self.purchase_id} - Party: {self.party} - Tickets: {len(self.tickets)}"
+
+    def full_name(self):
+        return f"{self.first_name} {self.last_name}"
+
+    def set_commissions(self):
+        self.promoter_commission = max(self.party.promoter_commission, self.promoter.commission)
+        self.club_owner_commission = min(self.party.club_owner_commission, self.party.club_owner.commission)
 
     def set_price(self, price_float):
         self.price = int(price_float * 100)
@@ -391,34 +528,82 @@ class Purchase(db.Model, TrackModifications):
     def cancel_purchase(self):
         self.status = STATUS_CANCELED
 
-    def first_name(self):
-        return self.name.split(" ")[0]
-
     def qr_code(self):
         url = pyqrcode.create(self.hash)
         return url.png_as_base64_str(scale=6)
 
     def entrance_code(self):
-        return f"{ self.name }-{ self.purchase_id }".replace(" ", "")
+        return f"{ self.party_id }-{ self.purchase_id }"
+
+    def json(self):
+        data = {
+            "id": self.purchase_id,
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "name": self.full_name(),
+            "email": self.email,
+            "number_of_tickers": len(self.tickets),
+            "party": {
+                "id": self.party.party_id,
+                "title": self.party.title,
+                "start_date": datetime_browser(self.party.party_start_datetime),
+                "end_date": datetime_browser(self.party.party_end_datetime),
+            },
+        }
+        if current_user.is_organizer():
+            data.update({
+                "entrance_code": self.entrance_code(),
+                "purchase_date": datetime_browser(self.purchase_datetime),
+                "price": self.get_price(),
+                "refunds": [r.json() for r in self.refunds],
+                "status": self.status,
+                "mollie_payment_id": self.mollie_payment_id,
+                "mollie_description": self.mollie_description(),
+            })
+        if current_user.is_hostess():
+            data.update({
+                "entrance_code": self.entrance_code(),
+                "paid": self.status == STATUS_PAID,
+                "tickets": [t.json() for t in self.tickets],
+                "available": len([t for t in self.tickets if t.available()]) > 0,
+            })
+        return data
+
+    def num_tickets(self):
+        return len(self.tickets) if self.status == STATUS_PAID else 0
 
     # PromoterFinances
     def promoter_tickets(self):
         return len(self.tickets)
 
     def promoter_price(self):
-        return self.get_price() * self.promoter_commission / 100
+        return self.get_price() * self.promoter_commission / 100 if self.status == STATUS_PAID else 0
 
-    def refunded_tickets(self):
+    def num_refunded_tickets(self):
         return len([t for t in self.tickets if t.refunded])
 
     def refunded_price(self):
-        return self.get_ticket_price() * self.refunded_tickets() * self.promoter_commission / 100
+        return self.get_ticket_price() * self.num_refunded_tickets() * self.promoter_commission / 100
 
-    def promoter_finances_json(self):
+    def promoter_finances(self):
         return {
-            "tickets": self.promoter_tickets(),
+            "tickets": self.num_tickets(),
             "promoter_price": self.promoter_price(),
             "refunded_price": self.refunded_price()
+        }
+
+    # ClubOwnerFinances
+    def club_owner_price(self):
+        return self.get_price() * self.club_owner_commission / 100 if self.status == STATUS_PAID else 0
+
+    def club_owner_refunded_price(self):
+        return self.get_ticket_price() * self.num_refunded_tickets() * self.promoter_commission / 100
+
+    def club_owner_finances(self):
+        return {
+            "tickets": self.num_tickets(),
+            "promoter_price": self.club_owner_price(),
+            "refunded_price": self.club_owner_refunded_price()
         }
 
     # PastParties
@@ -437,22 +622,6 @@ class Purchase(db.Model, TrackModifications):
     def purchase_date(self):
         return self.purchase_datetime.strftime("%d-%m-%Y %H:%M")
 
-    def refund_json(self):
-        return {
-            "purchase_id": self.purchase_id,
-            "name": self.name,
-            "email": self.email,
-            "purchase_date": self.purchase_date(),
-            "entrance_code": self.entrance_code(),
-            "party_id": self.party.party_id,
-            "party_title": self.party.title,
-            "party_date": self.party.party_date(),
-            "price": self.get_price(),
-            "number_of_tickers": len(self.tickets),
-            "refunds": [r.refund_json() for r in self.refunds],
-            "status": self.status
-        }
-
 
 class Refund(db.Model, TrackModifications):
     __tablename__ = REFUND
@@ -469,11 +638,12 @@ class Refund(db.Model, TrackModifications):
     def get_price(self):
         return float(self.price)/100
 
-    def refund_json(self):
+    def json(self):
         return {
             "refund_id": self.refund_id,
             "price": self.get_price(),
             "mollie_refund_id": self.mollie_refund_id,
+            "date": datetime_browser(self.refund_datetime),
         }
 
 
@@ -489,18 +659,30 @@ class Code(db.Model, TrackModifications):
     def __repr__(self):
         return self.code
 
-    def promoter(self):
-        if self.user is None:
-            return "-"
-        return self.user
-
     def deactivate(self):
         self.active = False
-        self.user = None
+        self.user_id = None
 
     def qr_code(self):
-        url = pyqrcode.create(url_for("main.index", code=self.code, _external=True))
+        url = pyqrcode.create(f"http://84.84.165.95:8080/?code={self.code}")
         return url.png_as_base64_str(scale=10)
+
+    def json(self):
+        data = {
+            "id": self.code_id,
+            "code": self.code,
+            "active": self.active,
+        }
+        if current_user.is_promoter():
+            data.update({
+                "qr_code": self.qr_code(),
+            })
+        if self.user_id is not None:
+            data["promoter"] = {
+                "id": self.user.user_id,
+                "name": self.user.full_name()
+            }
+        return data
 
 
 class File(db.Model, TrackModifications):
@@ -514,5 +696,7 @@ class File(db.Model, TrackModifications):
     parties = db.relationship("Party", secondary=party_file_table)
 
     def url(self):
-        return"{static}{file}"\
+        relative_url = "{static}{file}"\
             .format(static=current_app.static_url_path, file=self.path.split("static")[1].replace('\\', '/'))
+        url = f"{request.url_root[:-1]}{relative_url}"
+        return urllib.parse.quote(url, safe="/:")

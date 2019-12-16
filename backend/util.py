@@ -14,8 +14,8 @@ def utc_to_local(utc_dt):
     return utc_dt.replace(tzinfo=timezone.utc).astimezone(tz=None)
 
 
-def datetime_browser_format(dt):
-    return dt.strftime(DATETIME_FORMAT)
+def datetime_python(s):
+    return datetime.strptime(s, DATETIME_FORMAT)
 
 
 def auth_token():
@@ -34,7 +34,7 @@ def allowed_file(filename):
 def upload_file(file, club_owner, file_type):
     if file.filename != "" and allowed_file(file.filename):
         filename = secure_filename(file.filename)
-        directory = os.path.join(current_app.static_folder, UPLOAD_FOLDER, club_owner.username)
+        directory = os.path.join(current_app.static_folder, UPLOAD_FOLDER, club_owner.club)
         path = os.path.join(directory, f"{time()}.{file_extension(filename)}")
         if File.query.filter(File.path == path).first() is not None:
             # flash(f"Could not upload file {filename} ({file_type}). Please try again")

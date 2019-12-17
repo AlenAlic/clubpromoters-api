@@ -1,0 +1,16 @@
+
+Dear {{ purchase.first_name() }},
+
+
+Thank you for purchasing tickets to {{ purchase.party }}, on {{ purchase.party.party_date() }}.
+
+*Purchase details*
+
+At the door, please show the following code to the hostess to enter the venue:
+
+"{{ purchase.entrance_code() }}"
+
+
+Regards,
+
+{{ config.PRETTY_URL }}

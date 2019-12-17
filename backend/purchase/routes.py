@@ -38,7 +38,7 @@ def order(party_id):
                 'value': purchase.mollie_price()
             },
             'description': f'{purchase.mollie_description()}',
-            'webhookUrl': url_for('mollie_webhook.mollie_webhook', _external=True),
+            'webhookUrl': url_for('mollie_webhook.mollie_webhook', scheme='https', _external=True),
             'redirectUrl': f'{current_app.config.get("BASE_URL")}/purchase/completed/{purchase.hash}',
             'metadata': {
                 'purchase_id': str(purchase.purchase_id),

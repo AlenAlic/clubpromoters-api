@@ -32,14 +32,13 @@ def party(party_id):
 @requires_access_level([AL_HOSTESS])
 def entrance_code():
     form = json.loads(request.data)
-    ids = form["entrance_code"].split("-")
-    if len(ids) == 2:
-        purchase = Purchase.query.filter(Purchase.purchase_id == ids[1]).first()
-        available_tickets = [t for t in purchase.tickets if t.available()]
-        if len(available_tickets) > 0:
-            return jsonify(purchase.json())
-        return BAD_REQUEST
-    return NOT_FOUND
+    purchase = Purchase.query.filter(Purchase.hash == form["entrance_code"]).first()
+    if purchase is None:
+        return NOT_FOUND
+    available_tickets = [t for t in purchase.tickets if t.available()]
+    if len(available_tickets) > 0:
+        return jsonify(purchase.json())
+    return BAD_REQUEST
 
 
 @bp.route('/accept', methods=[POST])

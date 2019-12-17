@@ -20,7 +20,7 @@ def create_new_hostess():
     account.email = form["email"]
     account.first_name = form["first_name"]
     account.last_name = form["last_name"]
-    account.activation_code = auth_token()
+    account.auth_code = auth_token()
     account.access = AL_HOSTESS
     account.working = True
     account.club_owner = current_user

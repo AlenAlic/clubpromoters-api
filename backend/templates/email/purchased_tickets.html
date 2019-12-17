@@ -3,7 +3,7 @@
 <p>Thank you for purchasing tickets to {{ purchase.party }}, on {{ purchase.party.party_date() }}.</p>
 <p>*Purchase details*</p>
 <p>At the door, please show the QR Code for to the hostess to enter the venue.</p>
-<img src="data:image/png;base64,{{ purchase.qr_code() }}" alt="QR code">
+<img src="{{ url_for('purchase.qr_code', _scheme='https', _external=True, purchase_hash=purchase.hash) }}" alt="QR code">
 <p>Alternatively, you show the following code:</p>
 <p>"{{ purchase.entrance_code() }}"</p>
 <br/>

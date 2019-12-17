@@ -1,4 +1,4 @@
-from flask import render_template, redirect, url_for, request, g, abort, json, current_app, jsonify
+from flask import url_for, request, g, json, current_app, jsonify, Response
 from backend.purchase import bp
 from backend import db
 from backend.models import code_required, Party, Ticket, Purchase, get_code_from_request
@@ -60,19 +60,16 @@ def completed(purchase_hash=None):
     return BAD_REQUEST
 
 
-@bp.route('/failed', methods=[GET])
-def failed():
-    return render_template('purchases/failed.html')
-
-
 @bp.route('/qr_code/<purchase_hash>', methods=[GET])
 def qr_code(purchase_hash=None):
     if purchase_hash is None:
-        abort(404, 'Unknown purchase')
+        return NOT_FOUND
     purchase = Purchase.query.filter(Purchase.hash == purchase_hash).first()
     if purchase is not None:
-        return render_template('purchases/completed.html', purchase=purchase)
-    return redirect(url_for('purchases.failed'))
+        resp = Response(content_type="image/png")
+        resp.data = purchase.qr_code_image()
+        return resp
+    return BAD_REQUEST
 
 
 # payment = {

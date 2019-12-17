@@ -11,6 +11,7 @@ from hashlib import sha3_256
 import pyqrcode
 import os
 import urllib.parse
+from io import BytesIO
 
 
 def datetime_browser(dt):
@@ -528,9 +529,11 @@ class Purchase(db.Model, TrackModifications):
     def cancel_purchase(self):
         self.status = STATUS_CANCELED
 
-    def qr_code(self):
+    def qr_code_image(self):
         url = pyqrcode.create(self.hash)
-        return url.png_as_base64_str(scale=6)
+        img = BytesIO()
+        url.png(img, scale=6)
+        return img.getvalue()
 
     def entrance_code(self):
         return f"{ self.party_id }-{ self.purchase_id }"

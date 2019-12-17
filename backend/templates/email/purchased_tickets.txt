@@ -1,5 +1,5 @@
 
-Dear {{ purchase.first_name() }},
+Dear {{ purchase.first_name }},
 
 
 Thank you for purchasing tickets to {{ purchase.party }}, on {{ purchase.party.party_date() }}.

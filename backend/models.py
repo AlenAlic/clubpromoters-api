@@ -664,7 +664,7 @@ class Code(db.Model, TrackModifications):
         self.user_id = None
 
     def qr_code(self):
-        url = pyqrcode.create(f"http://84.84.165.95:8080/?code={self.code}")
+        url = pyqrcode.create(f"{current_app.config.get('BASE_URL')}?code={self.code}")
         return url.png_as_base64_str(scale=10)
 
     def json(self):
@@ -698,5 +698,5 @@ class File(db.Model, TrackModifications):
     def url(self):
         relative_url = "{static}{file}"\
             .format(static=current_app.static_url_path, file=self.path.split("static")[1].replace('\\', '/'))
-        url = f"{request.url_root[:-1]}{relative_url}"
+        url = f"https://{request.host}{relative_url}"
         return urllib.parse.quote(url, safe="/:")

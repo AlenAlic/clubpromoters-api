@@ -100,7 +100,7 @@ def create_app(config_class=Config):
     def create_admin(email, password, first_name, last_name):
         if len(User.query.filter(User.access == values.AL_ADMIN).all()) == 0:
             a = User()
-            a.email = email
+            d.email = email
             a.set_password(password)
             a.access = values.AL_ADMIN
             a.is_active = True
@@ -119,6 +119,9 @@ def create_app(config_class=Config):
 
     from backend.main import bp as main_bp
     app.register_blueprint(main_bp)
+
+    from backend.documents import bp as documents_bp
+    app.register_blueprint(documents_bp, url_prefix='/documents')
 
     from backend.auth import bp as auth_bp
     app.register_blueprint(auth_bp, url_prefix='/auth')

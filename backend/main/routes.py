@@ -1,8 +1,12 @@
-from flask import jsonify, json, request
+from flask import jsonify, json, request, g
+from flask_login import login_required
 from backend.main import bp
+from backend.models import requires_access_level
+from backend import db
 from backend.values import *
-from backend.models import Party, Code
+from backend.models import Party, Code, User
 from datetime import datetime
+from backend.util import upload_image
 
 
 @bp.route('/ping', methods=[GET])
@@ -14,7 +18,10 @@ def ping():
 def party(party_id):
     p = Party.query.filter(Party.is_active.is_(True), Party.party_end_datetime > datetime.utcnow(),
                            Party.party_id == party_id).first()
-    return jsonify(p.json())
+    return jsonify({
+        "party": p.json(),
+        "settings": g.config.json(),
+    })
 
 
 @bp.route('/active_parties', methods=[GET])
@@ -42,3 +49,24 @@ def check_code():
     if code is not None:
         return OK
     return BAD_REQUEST
+
+
+@bp.route('/upload/images/<int:user_id>', methods=[POST])
+@login_required
+@requires_access_level([AL_ORGANIZER, AL_CLUB_OWNER])
+def upload_images(user_id):
+    user = User.query.filter(User.user_id == user_id).first()
+    form = request.form
+    files = request.files
+    for image in files:
+        upload_image(files[image], user, logo=form["logo"] == "true")
+    db.session.commit()
+    return OK
+
+
+@bp.route('/assets/<int:user_id>', methods=[GET])
+@login_required
+@requires_access_level([AL_ORGANIZER, AL_CLUB_OWNER])
+def assets(user_id):
+    user = User.query.filter(User.user_id == user_id).first()
+    return user.assets()

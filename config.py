@@ -34,8 +34,11 @@ class Config(object):
     allowed_urls = os.environ.get("ALLOWED_URLS")
     ALLOWED_URLS = json.loads(allowed_urls) if allowed_urls else ["http://127.0.0.1:8080"]
 
-    # For development only, the Mollie API key is set in the config
+    # DEV ONLY
+    # The Mollie API key is set in the config
     MOLLIE_API_KEY = os.environ.get('MOLLIE_API_KEY')
+    # Mollie web hook url
+    MOLLIE_WEB_HOOK_URL = os.environ.get('MOLLIE_WEB_HOOK_URL')
 
 
 # MAIL SERVERS

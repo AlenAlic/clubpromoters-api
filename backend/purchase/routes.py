@@ -21,6 +21,8 @@ def order(party_id):
         purchase.code = get_code_from_request(request)
         purchase.promoter = purchase.code.user
         purchase.set_commissions()
+        purchase.set_ticket_price(form["ticket_price"])
+        purchase.set_administration_costs(form["administration_costs"])
         purchase.set_price(party.get_ticket_price() * tickets)
         for i in range(tickets):
             t = Ticket()
@@ -32,7 +34,7 @@ def order(party_id):
         db.session.commit()
         mollie_client = Client()
         mollie_client.set_api_key(g.mollie)
-        payment = mollie_client.payments.create({
+        payment_data = {
             'amount': {
                 'currency': 'EUR',
                 'value': purchase.mollie_price()
@@ -43,7 +45,10 @@ def order(party_id):
             'metadata': {
                 'purchase_id': str(purchase.purchase_id),
             }
-        })
+        }
+        if current_app.config.get("DEBUG"):
+            payment_data['webhookUrl'] = current_app.config.get("MOLLIE_WEB_HOOK_URL")
+        payment = mollie_client.payments.create(payment_data)
         purchase.mollie_payment_id = payment.id
         db.session.commit()
         return payment.checkout_url

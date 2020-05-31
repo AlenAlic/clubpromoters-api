@@ -1,7 +1,8 @@
 from flask import request, jsonify, g, json
-from flask_login import login_required
+from flask_login import login_required, current_user
 from backend.organizer import bp
-from backend.models import requires_access_level, User, Configuration, Code, Party, Purchase, Refund
+from backend.models import requires_access_level, User, Configuration, Code, Party, Purchase, Refund, Location, \
+    PartyFile
 from backend import db
 from backend.values import *
 import random
@@ -31,8 +32,22 @@ def config():
         c.default_promoter_commission = form["default_promoter_commission"]
         c.mollie_api_key = form["mollie_api_key"]
         c.test_email = form["test_email"]
+        c.set_minimum_promoter_commission(form["minimum_promoter_commission"])
+        c.set_administration_costs(form["administration_costs"])
         db.session.commit()
         return jsonify(c.json())
+
+
+@bp.route('/upload_terms', methods=[POST])
+@login_required
+@requires_access_level([AL_ORGANIZER])
+def upload_images():
+    files = request.files
+    pdf_file = upload_file(files["terms"], current_user)
+    if pdf_file:
+        g.config.terms = pdf_file
+        db.session.commit()
+    return jsonify(g.config.json())
 
 
 @bp.route('/create_new_club_owner', methods=[POST])
@@ -46,6 +61,47 @@ def create_new_club_owner():
     account.commission = form["commission"]
     account.auth_code = auth_token()
     account.access = AL_CLUB_OWNER
+    db.session.add(account)
+    db.session.commit()
+    send_activation_email(account)
+    return OK
+
+
+@bp.route('/create_new_location', methods=[POST])
+@login_required
+@requires_access_level([AL_ORGANIZER])
+def create_new_location():
+    form = json.loads(request.data)
+    club_owner = User.query.filter(User.user_id == form["user_id"]).first()
+    location = Location()
+    location.user = club_owner
+    location.name = form["name"]
+    location.street = form["street"]
+    location.street_number = form["street_number"]
+    location.street_number_addition = form["street_number_addition"]
+    location.postal_code = form["postal_code"]
+    location.postal_code_letters = form["postal_code_letters"].upper()
+    location.city = form["city"]
+    location.maps_url = form["maps_url"]
+    db.session.add(location)
+    db.session.commit()
+    return OK
+
+
+@bp.route('/create_new_hostess', methods=[POST])
+@login_required
+@requires_access_level([AL_ORGANIZER])
+def create_new_hostess():
+    form = json.loads(request.data)
+    club_owner = User.query.filter(User.user_id == form["user_id"]).first()
+    account = User()
+    account.email = form["email"]
+    account.first_name = form["first_name"]
+    account.last_name = form["last_name"]
+    account.auth_code = auth_token()
+    account.access = AL_HOSTESS
+    account.working = True
+    account.club_owner = club_owner
     db.session.add(account)
     db.session.commit()
     send_activation_email(account)
@@ -165,28 +221,48 @@ def deactivate(code_id):
 @login_required
 @requires_access_level([AL_ORGANIZER])
 def create_new_party():
-    form = request.form
-    files = request.files
+    form = json.loads(request.data)
     club_owner = User.query.filter(User.user_id == form["club"]).first()
-    logo = upload_file(files["logo"], club_owner, LOGO)
-    image = upload_file(files["image"], club_owner, IMAGE)
     party = Party()
-    party.title = form["title"]
+    party.name = form["name"]
+    party.location_id = form["location"]
     party.party_start_datetime = datetime_python(form["start_date"])
     party.party_end_datetime = datetime_python(form["end_date"])
+    if "description" in form:
+        party.description = form["description"]
     party.num_available_tickets = form["number_of_tickets"]
     party.set_ticket_price(form["ticket_price"])
     party.status = NORMAL
     party.club_owner_commission = form["club_owner_commission"]
     party.club_owner = club_owner
     party.promoter_commission = form["promoter_commission"]
-    party.logo = logo.url()
-    party.image = image.url()
-    party.files.append(logo)
-    party.files.append(image)
+    for idx, file_id in enumerate(form["images"]):
+        party_file = PartyFile()
+        party_file.party = party
+        party_file.file_id = file_id
+        party_file.order = idx
+    party.logo_id = form["logo"]
+    party.interval = form["interval"]
     db.session.add(party)
     db.session.commit()
     return OK
+
+
+@bp.route('/edit_party/<int:party_id>', methods=[POST])
+@login_required
+@requires_access_level([AL_ORGANIZER])
+def edit_party(party_id):
+    form = json.loads(request.data)
+    party = Party.query.filter(Party.party_id == party_id).first()
+    if party:
+        party.name = form["name"]
+        party.num_available_tickets = form["number_of_tickets"]
+        party.set_ticket_price(form["ticket_price"])
+        party.club_owner_commission = form["club_owner_commission"]
+        party.promoter_commission = form["promoter_commission"]
+        db.session.commit()
+        return OK
+    return BAD_REQUEST
 
 
 @bp.route('/inactive_parties', methods=[GET])
@@ -229,7 +305,10 @@ def past_parties():
 
 def parties_list(year, month):
     last_month = last_month_datetime(year, month)
-    party = Party.query.filter(Party.is_active.is_(True), Party.party_end_datetime < datetime.now(),
+    # party = Party.query.filter(Party.is_active.is_(True), Party.party_end_datetime < datetime.now(),
+    #                            func.month(Party.party_end_datetime) == func.month(last_month),
+    #                            func.year(Party.party_end_datetime) == func.year(last_month)).all()
+    party = Party.query.filter(Party.is_active.is_(True),
                                func.month(Party.party_end_datetime) == func.month(last_month),
                                func.year(Party.party_end_datetime) == func.year(last_month)).all()
     return [p.json() for p in party]

@@ -202,7 +202,7 @@ def setup():
 #                 club_owner = User.query.filter(User.access == ACCESS[CLUB_OWNER]).first()
 #                 for i in range(test_config["parties"]):
 #                     party = Party()
-#                     party.title = f"Party{i}"
+#                     party.name = f"Party{i}"
 #                     start_date = datetime.now().replace(tzinfo=timezone.utc, hour=23, minute=0,
 #                                                         second=0, microsecond=0) + (i % 3 - 1) * timedelta(days=8 * i)
 #                     start_date = start_date - timedelta(days=2)

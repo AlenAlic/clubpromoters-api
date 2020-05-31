@@ -100,7 +100,7 @@ def create_app(config_class=Config):
     def create_admin(email, password, first_name, last_name):
         if len(User.query.filter(User.access == values.AL_ADMIN).all()) == 0:
             a = User()
-            d.email = email
+            a.email = email
             a.set_password(password)
             a.access = values.AL_ADMIN
             a.is_active = True

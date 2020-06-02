@@ -1,73 +1,45 @@
-from flask import jsonify, json, request, g
-from flask_login import login_required
+from flask import render_template, redirect, url_for, flash, request, current_app, send_from_directory
+from flask_login import current_user, login_user, logout_user, login_required
 from backend.main import bp
-from backend.models import requires_access_level
-from backend import db
-from backend.values import *
-from backend.models import Party, Code, User
-from datetime import datetime
-from backend.util import upload_image
+from backend.main.forms import LoginForm
+from constants import *
+from models import User
+import os
 
 
-@bp.route('/ping', methods=[GET])
-def ping():
-    return OK
+@bp.route("/", methods=[GET, POST])
+def index():
+    if current_user.is_authenticated:
+        return redirect(url_for("main.dashboard"))
+    form = LoginForm()
+    if request.method == POST:
+        if form.validate_on_submit():
+            user = User.query.filter_by(email=form.email.data).first()
+            if user is None or not user.check_password(form.password.data):
+                flash("Invalid email or password", "alert-danger")
+                return redirect(url_for("main.index"))
+            if user.is_active and (user.is_admin or user.is_organizer):
+                login_user(user)
+                return redirect(url_for("main.dashboard"))
+            else:
+                flash("Account inactive", "alert-warning")
+                return redirect(url_for("main.index"))
+    return render_template("main/index.html", login_form=form)
 
 
-
-@bp.route('/public/party/<int:party_id>', methods=[GET])
-def party(party_id):
-    p = Party.query.filter(Party.is_active.is_(True), Party.party_end_datetime > datetime.utcnow(),
-                           Party.party_id == party_id).first()
-    return jsonify({
-        "party": p.json(),
-        "settings": g.config.json(),
-    })
+@bp.route("/favicon.ico")
+def favicon():
+    return send_from_directory(os.path.join(current_app.root_path, "static"), "favicon.ico")
 
 
-@bp.route('/public/active_parties', methods=[GET])
-def active_parties():
-    parties = Party.query.filter(Party.is_active.is_(True), Party.party_end_datetime > datetime.utcnow())\
-        .order_by(Party.party_start_datetime).all()
-    return jsonify([p.json() for p in parties])
-
-
-@bp.route('/public/homepage_parties', methods=[GET])
-def homepage_parties():
-    parties = Party.query.filter(Party.is_active.is_(True), Party.party_end_datetime > datetime.utcnow())\
-        .order_by(Party.party_start_datetime, Party.party_id).all()
-    if len(parties) == 0:
-        return jsonify([])
-    min_date = min([p.party_start_datetime for p in parties])
-    parties = [p for p in parties if p.party_start_datetime == min_date]
-    return jsonify([p.json() for p in parties])
-
-
-@bp.route('/public/check_code', methods=[POST])
-def check_code():
-    form = json.loads(request.data)
-    code = Code.query.filter(Code.active.is_(True), Code.code == form["code"]).first()
-    if code is not None:
-        return OK
-    return BAD_REQUEST
-
-
-@bp.route('/user/upload/images/<int:user_id>', methods=[POST])
+@bp.route("/dashboard", methods=[GET, POST])
 @login_required
-@requires_access_level([AL_ORGANIZER, AL_CLUB_OWNER])
-def upload_images(user_id):
-    user = User.query.filter(User.user_id == user_id).first()
-    form = request.form
-    files = request.files
-    for image in files:
-        upload_image(files[image], user, logo=form["logo"] == "true")
-    db.session.commit()
-    return OK
+def dashboard():
+    return render_template("main/dashboard.html")
 
 
-@bp.route('/user/assets/<int:user_id>', methods=[GET])
+@bp.route("/logout", methods=[GET])
 @login_required
-@requires_access_level([AL_ORGANIZER, AL_CLUB_OWNER])
-def assets(user_id):
-    user = User.query.filter(User.user_id == user_id).first()
-    return user.assets()
+def logout():
+    logout_user()
+    return redirect(url_for("main.index"))

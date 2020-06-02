@@ -26,6 +26,11 @@ class Config(object):
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD') or ''
     MAIL_DEFAULT_SENDER = os.environ.get('MAIL_DEFAULT_SENDER') or 'email@example.com'
 
+    ERROR_EMAIL = os.environ.get("ERROR_EMAIL") or "error@example.com"
+
+    FLASK_ADMIN_FLUID_LAYOUT = True
+    FLASK_ADMIN_SWATCH = "flatly"
+
     PRETTY_URL = os.environ.get('PRETTY_URL') or "127.0.0.1:8080"
     BASE_URL = "https://" + PRETTY_URL
     ACTIVATE_URL = BASE_URL + "/auth/activate"

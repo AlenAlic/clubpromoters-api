@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block navbar %}{% endblock %}
+
+{% block app_content %}
+<div class="container">
+    <h1 class="mt-5">An unexpected error has occurred</h1>
+
+    {% if config.DEBUG %}
+        <p>
+            <b>Status code:</b> {{ status_code }}
+        </p>
+        <p>
+            <b>Error:</b> {{ error }}
+        </p>
+        <h2 class="mt-4">Return to main page</h2>
+        <p>Click <a href="{{ url_for('main.index') }}">here</a> to go to the main page</p>
+        {% if trace is not none %}
+            <h2 class="mt-4">Trace</h2>
+            <ul class="list-group mb-5">
+                {% for t in trace %}
+                    <li class="list-group-item px-2 py-2">{{ t }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% else %}
+        <div class="mb-5">
+            <p>The site administrator has been notified.</p>
+            <h2 class="mt-4">Return to main page</h2>
+            <p>Click <a href="{{ url_for('main.index') }}">here</a> to go to the main page</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

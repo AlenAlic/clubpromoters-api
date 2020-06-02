@@ -1,0 +1,31 @@
+Error report!
+
+
+Status code: {{ status_code }}
+Error: {{ error }}
+User: {% if current_user.is_authenticated %}{{ current_user.email }}{% else %}Anonymous{% endif %}
+
+
+{% if request.blueprint == "api" %}
+Endpoint: {{ request.path }}
+{% if request.json is not none %}
+Data:
+    {% for key, v in request.json.items() %}
+    {{ key }}: {{ v }}
+    {% endfor %}
+{% endif %}
+{% else %}
+URL: {{ request.path }}
+{% if request.form | length %}
+Form data:
+    {% for key, v in form.items() %}
+    {{ key }}: {{ v }}
+    {% endfor %}
+{% endif %}
+{% endif %}
+
+
+{% for t in trace %}
+{{ t }}
+
+{% endfor %}

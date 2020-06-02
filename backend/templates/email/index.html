@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+<div class="row">
+{% for data in email_list %}
+    {% with data=data %}
+        {% include "email/_index_page.html" %}
+    {% endwith %}
+{% endfor %}
+</div>
+{% endblock %}

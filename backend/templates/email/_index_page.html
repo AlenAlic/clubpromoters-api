@@ -1,0 +1,10 @@
+<div class="col-12 col-sm-6 col-md-4 col-lg-3 mt-3">
+    <div class="list-group">
+        <div class="list-group-item active">{{ data["group"] }}</div>
+        {% for name, text in data["emails"].items() %}
+            <a href="{{ url_for('email.preview', group=data['group'], name=name) }}" class="list-group-item list-group-item-action">
+                {{ text }}
+            </a>
+        {% endfor %}
+    </div>
+</div>

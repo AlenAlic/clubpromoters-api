@@ -1,0 +1,47 @@
+{% extends "bootstrap_base.html" %}
+{% import "forms.html" as forms %}
+
+
+{% block navbar %}
+<nav class="navbar sticky-top navbar-expand-md navbar-light bg-light">
+    <div class="container">
+        <a class="navbar-brand" href="{{ url_for('main.index') }}">Dashboard</a>
+        {% if not current_user.is_anonymous %}
+            <div class="mr-auto">
+                <a href="{{ url_for('api.doc') }}" class="my-2 my-md-0" target="_blank">API</a>
+            </div>
+            <div class="ml-auto">
+                <a href="{{ url_for('main.logout') }}" class="btn btn-outline-primary my-2 my-md-0">Logout</a>
+            </div>
+        {% endif %}
+    </div>
+</nav>
+{% endblock %}
+
+
+{% block content %}
+{{ flash_messages() }}
+<div class="container d-flex flex-column flex-grow-1" style="min-height: calc(100vh - 70px);">
+    {% block app_content %}{% endblock %}
+</div>
+{% endblock %}
+
+
+{% macro flash_messages() %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+    <div class="position-absolute w-100" style="z-index: 1100;">
+    {% if messages %}
+        {% for category, message in messages %}
+            <div style="max-width: 800px; margin: 0 auto;">
+                <div class="alert {% if category=='message' %}alert-info{% else %}{{ category }}{% endif %} alert-dismissible mt-2" role="alert">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    {{ message }}
+                </div>
+            </div>
+        {% endfor %}
+    {% endif %}
+    </div>
+{% endwith %}
+{% endmacro %}

@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+<div class="row mt-3">
+    <div class="col-md-6">
+        <form method="POST" enctype="multipart/form-data">
+            <h3 class="mb-4">Create accounts</h3>
+            {{ form.hidden_tag() }}
+            {{ forms.form_field(form.number) }}
+            {{ forms.form_field(form.password) }}
+            {{ forms.form_field(form.club_owners) }}
+            {{ forms.form_field(form.promoters) }}
+            {{ forms.form_field(form.submit, class_="float-right") }}
+        </form>
+    </div>
+</div>
+<div class="row pb-5 mb-5">
+    <div class="col-md-6">
+        <h3 class="mb-4">Club Owners</h3>
+        {% for user in data["club_owners"] %}
+        <div class="accordion" id="accordionExample">
+            <div class="card">
+                <div class="card-header" data-toggle="collapse" data-target="#user-{{ user.user_id }}">
+                    <h5 class="mb-0">
+                        <span class="btn btn-block text-left my-0 py-0" type="button" data-toggle="collapse" data-target="#user-{{ user.user_id }}">
+                        {{ user }}
+                        </span>
+                    </h5>
+                </div>
+
+                <div id="user-{{ user.user_id }}" class="collapse" data-parent="#accordionExample">
+                    <div class="card-body">
+                        #Todo
+{#                        <div class="accordion" id="accordionExample-{{ user.user_id }}">#}
+{#                            {% for party in user.parties %}#}
+{#                            <div class="card">#}
+{#                                <div class="card-header" id="headingOne">#}
+{#                                    <h5 class="mb-0">#}
+{#                                        <span class="btn btn-block text-left my-0 py-0" type="button" data-toggle="collapse" data-target="#user-{{ user.user_id }}-{{ party.party_id }}">#}
+{#                                        {{ party.name }}#}
+{#                                        </span>#}
+{#                                    </h5>#}
+{#                                </div>#}
+{#                                <div id="user-{{ user.user_id }}-{{ party.party_id }}" class="collapse" data-parent="#accordionExample-{{ user.user_id }}">#}
+{#                                    <div class="card-body">#}
+{#                                        {{ party }}#}
+{#                                    </div>#}
+{#                                </div>#}
+{#                            </div>#}
+{#                            {% endfor %}#}
+{#                        </div>#}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="col-md-6">
+        <h3 class="mb-4">Promoters</h3>
+        {% for user in data["promoters"] %}
+        <div class="accordion" id="accordionExample">
+            <div class="card">
+                <div class="card-header" data-toggle="collapse" data-target="#user-{{ user.user_id }}">
+                    <h5 class="mb-0">
+                        <span class="btn btn-block text-left my-0 py-0" type="button" data-toggle="collapse" data-target="#user-{{ user.user_id }}">
+                        {{ user }}
+                        </span>
+                    </h5>
+                </div>
+                <div id="user-{{ user.user_id }}" class="collapse" data-parent="#accordionExample">
+                    <div class="card-body">
+                        #Todo
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

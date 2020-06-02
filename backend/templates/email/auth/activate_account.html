@@ -1,0 +1,24 @@
+{% extends "email/base.html" %}
+
+{% block body %}
+<table style="width: 100%; max-width: 800px; border: 1px solid lightgrey; margin-left: auto; margin-right: auto;">
+    <tbody>
+        {% with title="Activate your account" %}
+            {% include "email/snippets/header.html" %}
+        {% endwith %}
+        <tr class="table-main-body">
+            <td style="padding-bottom: 16px; text-align: center;">
+                <p>Dear {{ user.first_name }},</p>
+                <br/>
+                <p style="max-width: 480px; margin-left: auto; margin-right: auto;">
+                    Your account at {{ config.BASE_URL }} has been created. Click the button below to activate your account.
+                </p>
+                <p class="cta_wrapper">
+                    <a class="button--cta" href="{{ config.ACTIVATE_URL }}{{ user.auth_code }}" target="_blank">Activate account</a>
+                </p>
+                {% include "email/snippets/closing.html" %}
+            </td>
+        </tr>
+    </tbody>
+</table>
+{% endblock %}

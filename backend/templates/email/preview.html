@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+    <div class="row">
+        <div class="col text-center">
+            <h1>E-mail preview</h1>
+        </div>
+    </div>
+    <iframe src="{{ url_for('email.template', group=group, name=name) }}" class="w-100 mt-2 flex-grow-1"></iframe>
+    <div class="mt-3 mb-5 text-right">
+        <a class="btn btn-primary mb-3" href="{{ url_for('email.index') }}">Return to overview</a>
+    </div>
+{% endblock %}

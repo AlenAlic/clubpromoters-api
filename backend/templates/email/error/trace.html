@@ -1,0 +1,91 @@
+{% extends "email/base.html" %}
+
+{% block body %}
+<table style="width: 100%; max-width: 800px; border: 1px solid lightgrey; margin-left: auto; margin-right: auto;">
+    <tbody>
+        {% with title="Error report!" %}
+            {% include "email/snippets/header.html" %}
+        {% endwith %}
+        <tr>
+            <td style="padding-top: 32px;">
+                <b>Status code:</b> {{ status_code }}
+            </td>
+        </tr>
+        <tr>
+            <td style="padding-bottom: 16px;">
+                <b>Error:</b> {{ error }}
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <b>User:</b> {% if current_user.is_authenticated %}{{ current_user.email }}{% else %}Anonymous{% endif %}
+            </td>
+        </tr>
+        {% if request.blueprint == "api" %}
+            <tr>
+                <td>
+                    <b>Endpoint:</b> {{ request.path }}
+                </td>
+            </tr>
+            {% if request.json is not none %}
+            <tr>
+                <td>
+                    <b>Data:</b>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <table style="width: 100%;">
+                        <tbody>
+                        {% for key, v in request.json.items() %}
+                            <tr>
+                                <td style="padding-top: 0; padding-bottom: 0;"><i>{{ key }}</i></td>
+                                <td style="text-align: left; padding-top: 0; padding-bottom: 0;">{{ v }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+            {% endif %}
+        {% else %}
+            <tr>
+                <td>
+                    <b>URL:</b> {{ request.path }}
+                </td>
+            </tr>
+            {% if request.form | length %}
+            <tr>
+                <td>
+                    <b>Form data:</b>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <table style="width: 100%;">
+                        <tbody>
+                        {% for key, v in form.items() %}
+                            <tr>
+                                <td style="padding-top: 0; padding-bottom: 0;"><i>{{ key }}</i></td>
+                                <td style="text-align: left; padding-top: 0; padding-bottom: 0;">{{ v }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+            {% endif %}
+        {% endif %}
+        <tr>
+            <td style="padding-bottom: 32px;"></td>
+        </tr>
+    </tbody>
+    <tbody class="trace-group">
+        {% for t in trace %}
+            <tr class="trace-group-item">
+                <td>{{ t }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

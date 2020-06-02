@@ -14,7 +14,8 @@ def ping():
     return OK
 
 
-@bp.route('/party/<int:party_id>', methods=[GET])
+
+@bp.route('/public/party/<int:party_id>', methods=[GET])
 def party(party_id):
     p = Party.query.filter(Party.is_active.is_(True), Party.party_end_datetime > datetime.utcnow(),
                            Party.party_id == party_id).first()
@@ -24,14 +25,14 @@ def party(party_id):
     })
 
 
-@bp.route('/active_parties', methods=[GET])
+@bp.route('/public/active_parties', methods=[GET])
 def active_parties():
     parties = Party.query.filter(Party.is_active.is_(True), Party.party_end_datetime > datetime.utcnow())\
         .order_by(Party.party_start_datetime).all()
     return jsonify([p.json() for p in parties])
 
 
-@bp.route('/homepage_parties', methods=[GET])
+@bp.route('/public/homepage_parties', methods=[GET])
 def homepage_parties():
     parties = Party.query.filter(Party.is_active.is_(True), Party.party_end_datetime > datetime.utcnow())\
         .order_by(Party.party_start_datetime, Party.party_id).all()
@@ -42,7 +43,7 @@ def homepage_parties():
     return jsonify([p.json() for p in parties])
 
 
-@bp.route('/check_code', methods=[POST])
+@bp.route('/public/check_code', methods=[POST])
 def check_code():
     form = json.loads(request.data)
     code = Code.query.filter(Code.active.is_(True), Code.code == form["code"]).first()
@@ -51,7 +52,7 @@ def check_code():
     return BAD_REQUEST
 
 
-@bp.route('/upload/images/<int:user_id>', methods=[POST])
+@bp.route('/user/upload/images/<int:user_id>', methods=[POST])
 @login_required
 @requires_access_level([AL_ORGANIZER, AL_CLUB_OWNER])
 def upload_images(user_id):
@@ -64,7 +65,7 @@ def upload_images(user_id):
     return OK
 
 
-@bp.route('/assets/<int:user_id>', methods=[GET])
+@bp.route('/user/assets/<int:user_id>', methods=[GET])
 @login_required
 @requires_access_level([AL_ORGANIZER, AL_CLUB_OWNER])
 def assets(user_id):

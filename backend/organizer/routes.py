@@ -21,7 +21,7 @@ def random_code():
 
 @bp.route('/config', methods=[GET, POST])
 @login_required
-@requires_access_level([AL_ORGANIZER])
+@requires_access_level([ACCESS_ORGANIZER])
 def config():
     c = Configuration.query.first()
     if request.method == GET:
@@ -40,7 +40,7 @@ def config():
 
 @bp.route('/upload_terms', methods=[POST])
 @login_required
-@requires_access_level([AL_ORGANIZER])
+@requires_access_level([ACCESS_ORGANIZER])
 def upload_images():
     files = request.files
     pdf_file = upload_file(files["terms"], current_user)
@@ -52,7 +52,7 @@ def upload_images():
 
 @bp.route('/create_new_club_owner', methods=[POST])
 @login_required
-@requires_access_level([AL_ORGANIZER])
+@requires_access_level([ACCESS_ORGANIZER])
 def create_new_club_owner():
     form = json.loads(request.data)
     account = User()
@@ -60,7 +60,7 @@ def create_new_club_owner():
     account.email = form["email"]
     account.commission = form["commission"]
     account.auth_code = auth_token()
-    account.access = AL_CLUB_OWNER
+    account.access = ACCESS_CLUB_OWNER
     db.session.add(account)
     db.session.commit()
     send_activation_email(account)
@@ -69,7 +69,7 @@ def create_new_club_owner():
 
 @bp.route('/create_new_location', methods=[POST])
 @login_required
-@requires_access_level([AL_ORGANIZER])
+@requires_access_level([ACCESS_ORGANIZER])
 def create_new_location():
     form = json.loads(request.data)
     club_owner = User.query.filter(User.user_id == form["user_id"]).first()
@@ -90,7 +90,7 @@ def create_new_location():
 
 @bp.route('/create_new_hostess', methods=[POST])
 @login_required
-@requires_access_level([AL_ORGANIZER])
+@requires_access_level([ACCESS_ORGANIZER])
 def create_new_hostess():
     form = json.loads(request.data)
     club_owner = User.query.filter(User.user_id == form["user_id"]).first()
@@ -99,7 +99,7 @@ def create_new_hostess():
     account.first_name = form["first_name"]
     account.last_name = form["last_name"]
     account.auth_code = auth_token()
-    account.access = AL_HOSTESS
+    account.access = ACCESS_HOSTESS
     account.working = True
     account.club_owner = club_owner
     db.session.add(account)
@@ -110,7 +110,7 @@ def create_new_hostess():
 
 @bp.route('/create_new_promoter', methods=[POST])
 @login_required
-@requires_access_level([AL_ORGANIZER])
+@requires_access_level([ACCESS_ORGANIZER])
 def create_new_promoter():
     form = json.loads(request.data)
     account = User()
@@ -120,7 +120,7 @@ def create_new_promoter():
     account.commission = form["commission"]
     account.code = Code.query.filter(Code.code_id == form["code_id"]).first()
     account.auth_code = auth_token()
-    account.access = AL_PROMOTER
+    account.access = ACCESS_PROMOTER
     db.session.add(account)
     db.session.commit()
     send_activation_email(account)
@@ -129,7 +129,7 @@ def create_new_promoter():
 
 @bp.route('/update_user_commission', methods=[PATCH])
 @login_required
-@requires_access_level([AL_ORGANIZER])
+@requires_access_level([ACCESS_ORGANIZER])
 def update_user_commission():
     form = json.loads(request.data)
     account = User.query.filter(User.user_id == form["user_id"]).first()
@@ -140,31 +140,31 @@ def update_user_commission():
 
 @bp.route('/users', methods=[GET])
 @login_required
-@requires_access_level([AL_ORGANIZER])
+@requires_access_level([ACCESS_ORGANIZER])
 def users():
-    u = User.query.filter(or_(User.access == AL_CLUB_OWNER, User.access == AL_PROMOTER)).all()
+    u = User.query.filter(or_(User.access == ACCESS_CLUB_OWNER, User.access == ACCESS_PROMOTER)).all()
     return jsonify([user.json() for user in u])
 
 
 @bp.route('/club_owners', methods=[GET])
 @login_required
-@requires_access_level([AL_ORGANIZER])
+@requires_access_level([ACCESS_ORGANIZER])
 def club_owners():
-    u = User.query.filter(User.access == AL_CLUB_OWNER).all()
+    u = User.query.filter(User.access == ACCESS_CLUB_OWNER).all()
     return jsonify([user.json() for user in u])
 
 
 @bp.route('/promoters', methods=[GET])
 @login_required
-@requires_access_level([AL_ORGANIZER])
+@requires_access_level([ACCESS_ORGANIZER])
 def promoters():
-    u = User.query.filter(User.access == AL_PROMOTER).all()
+    u = User.query.filter(User.access == ACCESS_PROMOTER).all()
     return jsonify([user.json() for user in u])
 
 
 @bp.route('/codes/active', methods=[GET])
 @login_required
-@requires_access_level([AL_ORGANIZER])
+@requires_access_level([ACCESS_ORGANIZER])
 def active_codes():
     codes = Code.query.filter(Code.active.is_(True)).order_by(Code.code).all()
     return jsonify([c.json() for c in codes])
@@ -172,7 +172,7 @@ def active_codes():
 
 @bp.route('/codes/inactive', methods=[GET])
 @login_required
-@requires_access_level([AL_ORGANIZER])
+@requires_access_level([ACCESS_ORGANIZER])
 def inactive_codes():
     codes = Code.query.filter(Code.active.is_(False)).order_by(Code.code).all()
     return jsonify([c.json() for c in codes])
@@ -180,7 +180,7 @@ def inactive_codes():
 
 @bp.route('/codes', methods=[POST])
 @login_required
-@requires_access_level([AL_ORGANIZER])
+@requires_access_level([ACCESS_ORGANIZER])
 def create_codes():
     form = json.loads(request.data)
     all_codes = [f"{n:06}" for n in range(1, 1000000)]
@@ -197,7 +197,7 @@ def create_codes():
 
 @bp.route('/assign_code_to_promoter', methods=[PATCH])
 @login_required
-@requires_access_level([AL_ORGANIZER])
+@requires_access_level([ACCESS_ORGANIZER])
 def assign_code_to_promoter():
     form = json.loads(request.data)
     account = User.query.filter(User.user_id == form["user_id"]).first()
@@ -209,7 +209,7 @@ def assign_code_to_promoter():
 
 @bp.route('/codes/deactivate/<int:code_id>', methods=[PATCH])
 @login_required
-@requires_access_level([AL_ORGANIZER])
+@requires_access_level([ACCESS_ORGANIZER])
 def deactivate(code_id):
     code = Code.query.filter(Code.code_id == code_id).first()
     code.deactivate()
@@ -219,7 +219,7 @@ def deactivate(code_id):
 
 @bp.route('/create_new_party', methods=[POST])
 @login_required
-@requires_access_level([AL_ORGANIZER])
+@requires_access_level([ACCESS_ORGANIZER])
 def create_new_party():
     form = json.loads(request.data)
     club_owner = User.query.filter(User.user_id == form["club"]).first()
@@ -250,7 +250,7 @@ def create_new_party():
 
 @bp.route('/edit_party/<int:party_id>', methods=[POST])
 @login_required
-@requires_access_level([AL_ORGANIZER])
+@requires_access_level([ACCESS_ORGANIZER])
 def edit_party(party_id):
     form = json.loads(request.data)
     party = Party.query.filter(Party.party_id == party_id).first()
@@ -267,7 +267,7 @@ def edit_party(party_id):
 
 @bp.route('/inactive_parties', methods=[GET])
 @login_required
-@requires_access_level([AL_ORGANIZER])
+@requires_access_level([ACCESS_ORGANIZER])
 def inactive_parties():
     parties = Party.query.filter(Party.is_active.is_(False), Party.party_end_datetime > datetime.utcnow())\
         .order_by(Party.party_start_datetime).all()
@@ -276,7 +276,7 @@ def inactive_parties():
 
 @bp.route('/activate_party/<int:party_id>', methods=[PATCH])
 @login_required
-@requires_access_level([AL_ORGANIZER])
+@requires_access_level([ACCESS_ORGANIZER])
 def activate_party(party_id):
     party = Party.query.filter(Party.party_id == party_id).first()
     party.is_active = True
@@ -286,7 +286,7 @@ def activate_party(party_id):
 
 @bp.route('/deactivate_party/<int:party_id>', methods=[PATCH])
 @login_required
-@requires_access_level([AL_ORGANIZER])
+@requires_access_level([ACCESS_ORGANIZER])
 def deactivate_party(party_id):
     party = Party.query.filter(Party.party_id == party_id).first()
     party.is_active = False
@@ -296,7 +296,7 @@ def deactivate_party(party_id):
 
 @bp.route('/past_parties', methods=[GET])
 @login_required
-@requires_access_level([AL_ORGANIZER])
+@requires_access_level([ACCESS_ORGANIZER])
 def past_parties():
     parties = Party.query.filter(Party.is_active.is_(True), Party.party_end_datetime < datetime.utcnow())\
         .order_by(Party.party_start_datetime).all()
@@ -316,7 +316,7 @@ def parties_list(year, month):
 
 @bp.route('/party_income/<int:year>/<int:month>', methods=[GET])
 @login_required
-@requires_access_level([AL_ORGANIZER])
+@requires_access_level([ACCESS_ORGANIZER])
 def party_income(year, month):
     return jsonify(parties_list(year, month))
 
@@ -331,14 +331,14 @@ def purchases_list(year, month):
 
 @bp.route('/purchase/<int:year>/<int:month>', methods=[GET])
 @login_required
-@requires_access_level([AL_ORGANIZER])
+@requires_access_level([ACCESS_ORGANIZER])
 def purchases(year, month):
     return jsonify(purchases_list(year, month))
 
 
 @bp.route('/refund', methods=[POST])
 @login_required
-@requires_access_level([AL_ORGANIZER])
+@requires_access_level([ACCESS_ORGANIZER])
 def refund():
     mollie_client = Client()
     mollie_client.set_api_key(g.mollie)
@@ -377,7 +377,7 @@ def refund():
 
 @bp.route('/commissions/<int:year>/<int:month>', methods=[GET])
 @login_required
-@requires_access_level([AL_ORGANIZER])
+@requires_access_level([ACCESS_ORGANIZER])
 def commissions(year, month):
     last_month = last_month_datetime(year, month)
     purchase = Purchase.query.filter(Purchase.purchase_datetime < datetime.now(),
@@ -387,27 +387,3 @@ def commissions(year, month):
     club_owners = list(set([p.party.club_owner_id for p in purchase if p.party.club_owner_id is not None]))
     u = User.query.filter(User.user_id.in_(promoters + club_owners), User.is_active.is_(True)).all()
     return jsonify([user.commissions_json(purchase) for user in u])
-
-
-# @bp.route('/party_images', methods=['GET', 'POST'])
-# @login_required
-# @requires_access_level([ACCESS[ORGANIZER]])
-# def party_images():
-#     upload_form = UploadImagesForm()
-#     if request.method == "POST":
-#         if upload_form.validate_on_submit():
-#             club_owner = User.query.filter(User.user_id == upload_form.club_owner.data).first()
-#             if upload_form.logo.name in request.files:
-#                 upload_file(request.files[upload_form.logo.name], club_owner, LOGO)
-#             if upload_form.image.name in request.files:
-#                 upload_file(request.files[upload_form.image.name], club_owner, IMAGE)
-#             return redirect(url_for('organizer.party_images'))
-#     return render_template('organizer/party_images.html', upload_form=upload_form)
-# 
-# 
-# @bp.route('/party_template', methods=['GET', 'POST'])
-# @login_required
-# @requires_access_level([ACCESS[ORGANIZER]])
-# @page_inactive
-# def party_template():
-#     return render_template('organizer/party_template.html')

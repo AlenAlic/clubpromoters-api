@@ -8,13 +8,13 @@ from backend.util import last_month_datetime
 
 @bp.route('/code', methods=[GET])
 @login_required
-@requires_access_level([AL_PROMOTER])
+@requires_access_level([ACCESS_PROMOTER])
 def code():
     return jsonify(current_user.code.json() if current_user.code else None)
 
 
 @bp.route('/income/<int:year>/<int:month>', methods=[GET])
 @login_required
-@requires_access_level([AL_PROMOTER])
+@requires_access_level([ACCESS_PROMOTER])
 def income(year, month):
     return jsonify(current_user.promoter_income(last_month_datetime(year, month)))

@@ -7,7 +7,7 @@ from mollie.api.error import Error
 from backend.mollie_webhook.email import send_purchased_tickets
 
 
-@bp.route('/mollie_webhook', methods=['POST'])
+@bp.route('/mollie/webhook', methods=['POST'])
 def mollie_webhook():
     try:
         mollie_client = Client()

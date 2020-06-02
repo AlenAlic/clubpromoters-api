@@ -9,7 +9,7 @@ from datetime import datetime
 
 @bp.route('/parties', methods=[GET])
 @login_required
-@requires_access_level([AL_HOSTESS])
+@requires_access_level([ACCESS_HOSTESS])
 def hostess_parties():
     parties = Party.query.filter(Party.is_active.is_(True), Party.party_end_datetime > datetime.utcnow(),
                                  Party.club_owner_id == current_user.club_owner_id)\
@@ -20,7 +20,7 @@ def hostess_parties():
 
 @bp.route('/party/<int:party_id>', methods=[GET])
 @login_required
-@requires_access_level([AL_HOSTESS])
+@requires_access_level([ACCESS_HOSTESS])
 def party(party_id):
     purchases = Purchase.query.filter(Purchase.party_id == party_id).all()
     p = Party.query.filter(Party.party_id == party_id).first()
@@ -29,7 +29,7 @@ def party(party_id):
 
 @bp.route('/entrance_code', methods=[POST])
 @login_required
-@requires_access_level([AL_HOSTESS])
+@requires_access_level([ACCESS_HOSTESS])
 def entrance_code():
     form = json.loads(request.data)
     purchase = Purchase.query.filter(Purchase.hash == form["entrance_code"]).first()
@@ -43,7 +43,7 @@ def entrance_code():
 
 @bp.route('/accept', methods=[POST])
 @login_required
-@requires_access_level([AL_HOSTESS])
+@requires_access_level([ACCESS_HOSTESS])
 def accept():
     form = json.loads(request.data)
     purchase = Purchase.query.filter(Purchase.purchase_id == form["purchase_id"]).first()
@@ -59,7 +59,7 @@ def accept():
 
 @bp.route('/deny', methods=[POST])
 @login_required
-@requires_access_level([AL_HOSTESS])
+@requires_access_level([ACCESS_HOSTESS])
 def deny():
     form = json.loads(request.data)
     purchase = Purchase.query.filter(Purchase.purchase_id == form["purchase_id"]).first()

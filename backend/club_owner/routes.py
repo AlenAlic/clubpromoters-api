@@ -13,7 +13,7 @@ from sqlalchemy import func
 
 @bp.route('/create_new_hostess', methods=[POST])
 @login_required
-@requires_access_level([AL_CLUB_OWNER])
+@requires_access_level([ACCESS_CLUB_OWNER])
 def create_new_hostess():
     form = json.loads(request.data)
     account = User()
@@ -21,7 +21,7 @@ def create_new_hostess():
     account.first_name = form["first_name"]
     account.last_name = form["last_name"]
     account.auth_code = auth_token()
-    account.access = AL_HOSTESS
+    account.access = ACCESS_HOSTESS
     account.working = True
     account.club_owner = current_user
     send_activation_email(account)
@@ -33,15 +33,15 @@ def create_new_hostess():
 
 @bp.route('/hostesses', methods=[GET])
 @login_required
-@requires_access_level([AL_CLUB_OWNER])
+@requires_access_level([ACCESS_CLUB_OWNER])
 def users():
-    u = User.query.filter(User.access == AL_HOSTESS, User.club_owner_id == current_user.user_id).all()
+    u = User.query.filter(User.access == ACCESS_HOSTESS, User.club_owner_id == current_user.user_id).all()
     return jsonify([user.json() for user in u])
 
 
 @bp.route('/activate_hostess/<int:hostess_id>', methods=[PATCH])
 @login_required
-@requires_access_level([AL_CLUB_OWNER])
+@requires_access_level([ACCESS_CLUB_OWNER])
 def activate_hostess(hostess_id):
     form = json.loads(request.data)
     hostess = User.query.filter(User.user_id == hostess_id).first()
@@ -51,7 +51,7 @@ def activate_hostess(hostess_id):
 
 
 @bp.route('/inactive_parties', methods=[GET])
-@requires_access_level([AL_CLUB_OWNER])
+@requires_access_level([ACCESS_CLUB_OWNER])
 def inactive_parties():
     parties = Party.query.filter(Party.is_active.is_(False), Party.party_end_datetime > datetime.utcnow(),
                                  Party.club_owner == current_user).order_by(Party.party_start_datetime).all()
@@ -59,7 +59,7 @@ def inactive_parties():
 
 
 @bp.route('/active_parties', methods=[GET])
-@requires_access_level([AL_CLUB_OWNER])
+@requires_access_level([ACCESS_CLUB_OWNER])
 def active_parties():
     parties = Party.query.filter(Party.is_active.is_(True), Party.party_end_datetime > datetime.utcnow(),
                                  Party.club_owner == current_user).order_by(Party.party_start_datetime).all()
@@ -68,7 +68,7 @@ def active_parties():
 
 @bp.route('/past_parties', methods=[GET])
 @login_required
-@requires_access_level([AL_CLUB_OWNER])
+@requires_access_level([ACCESS_CLUB_OWNER])
 def past_parties():
     parties = Party.query.filter(Party.is_active.is_(True), Party.party_end_datetime < datetime.utcnow(),
                                  Party.club_owner == current_user).order_by(Party.party_start_datetime).all()
@@ -86,6 +86,6 @@ def parties_list(year, month):
 
 @bp.route('/party_income/<int:year>/<int:month>', methods=[GET])
 @login_required
-@requires_access_level([AL_CLUB_OWNER])
+@requires_access_level([ACCESS_CLUB_OWNER])
 def party_income(year, month):
     return jsonify(parties_list(year, month))

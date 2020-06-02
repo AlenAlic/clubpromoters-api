@@ -16,25 +16,6 @@ def send_account_activation_email(u):
                html_body=render_template('email/activate_account.html', user=u))
 
 
-@bp.route('/create', methods=[POST])
-@login_required
-def create():
-    form = json.loads(request.data)
-    u = User.query.filter(User.email.ilike(form["email"])).first()
-    if u is None:
-        u = User()
-        u.first_name = form["first_name"]
-        u.last_name = form["last_name"]
-        u.email = form["email"]
-        u.access = form["account"]
-        u.auth_code = auth_token()
-        db.session.add(u)
-        db.session.commit()
-        send_account_activation_email(u)
-        return OK
-    return BAD_REQUEST
-
-
 def check_password_requirements(new_password, repeat_password):
     equal = new_password == repeat_password
     length = len(new_password) >= MINIMAL_PASSWORD_LENGTH
@@ -87,20 +68,10 @@ def logout():
     return OK
 
 
-@bp.route('/user/<int:user_id>', methods=[GET])
-@login_required
-def user(user_id):
-    u = User.query.filter(User.user_id == user_id).first()
-    if u is not None:
-        return u.profile()
-    else:
-        return BAD_REQUEST
-
-
-@bp.route('/password/change/<int:user_id>', methods=[PATCH])
+@bp.route('/password/change', methods=[PATCH])
 @login_required
 def password(user_id):
-    u = User.query.filter(User.user_id == user_id).first()
+    u = current_user
     form = json.loads(request.data)
     if u.check_password(form["current_password"]):
         if check_password_requirements(form["new_password"], form["repeat_password"]) \

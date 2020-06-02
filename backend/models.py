@@ -125,19 +125,19 @@ class User(UserMixin, Anonymous, db.Model, TrackModifications):
         return f"{self.first_name} {self.last_name}"
 
     def is_admin(self):
-        return self.access == AL_ADMIN
+        return self.access == ACCESS_ADMIN
 
     def is_organizer(self):
-        return self.access == AL_ORGANIZER
+        return self.access == ACCESS_ORGANIZER
 
     def is_club_owner(self):
-        return self.access == AL_CLUB_OWNER
+        return self.access == ACCESS_CLUB_OWNER
 
     def is_promoter(self):
-        return self.access == AL_PROMOTER
+        return self.access == ACCESS_PROMOTER
 
     def is_hostess(self):
-        return self.access == AL_HOSTESS
+        return self.access == ACCESS_HOSTESS
 
     def allowed(self, access_levels):
         return self.access in access_levels
@@ -213,7 +213,7 @@ class User(UserMixin, Anonymous, db.Model, TrackModifications):
             "email": self.email,
             "access": self.access,
             "is_active": self.is_active,
-            "last_seen": self.last_seen,
+            "last_seen": datetime_browser(self.last_seen),
             "locations": [loc.json() for loc in self.locations]
         }
         if self.is_club_owner():
@@ -222,7 +222,7 @@ class User(UserMixin, Anonymous, db.Model, TrackModifications):
                     "id": h.user_id,
                     "email": h.email,
                     "name": h.full_name(),
-                    "last_seen": h.last_seen,
+                    "last_seen": datetime_browser(h.last_seen),
                     "is_active": h.is_active,
                 } for h in self.hostesses],
                 "commission": self.commission,
@@ -251,7 +251,7 @@ class User(UserMixin, Anonymous, db.Model, TrackModifications):
             "email": self.email,
             "access": self.access,
             "is_active": self.is_active,
-            "last_seen": self.last_seen,
+            "last_seen": datetime_browser(self.last_seen),
         }
         total = 0
         if self.is_promoter():

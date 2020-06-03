@@ -26,7 +26,24 @@
     <div class="col-12 col-md-6">
         <form method="POST" enctype="multipart/form-data">
             <h3 class="mb-4">Terms</h3>
+            {{ terms_form.hidden_tag() }}
+            {{ forms.form_field(terms_form.terms) }}
+            <div class="mt-3">
+                {{ forms.form_field(terms_form.upload_terms, class_="float-right") }}
+            </div>
         </form>
+        <form method="POST" enctype="multipart/form-data">
+            <div class="mt-3">
+                {{ forms.form_field(remove_terms_form.remove_terms, { "class_": "float-left", "name": "danger"} ) }}
+            </div>
+        </form>
+        <div class="mt-4">
+            {% if conf.terms %}
+                View the current terms <a href="{{ url_for('settings.terms') }}">here</a>.
+            {% else %}
+                No terms uploaded.
+            {% endif %}
+        </div>
     </div>
 </div>
 {% endblock %}

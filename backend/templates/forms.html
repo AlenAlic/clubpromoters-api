@@ -17,7 +17,9 @@
     {# deal with jinja scoping issues? #}
     {% set field_kwargs = kwargs %}
     {# note: same issue as above - should check widget, not field type #}
-    {{field(class="btn btn-{0} {1}".format(button_map.get(field.name, "primary"), field_class), **field_kwargs)}}
+    {{field(class="btn btn-{0} {1}".format(button_map.get("name", "primary"), field_class), **field_kwargs)}}
+{%- elif field.type == "FileField" -%}
+    {{field(class="form-control-file")}}
 {% else -%}
     {% set field_class = "form-group {0}".format(field_class) %}
     {% if field.flags.required %}

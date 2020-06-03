@@ -16,5 +16,5 @@ class DocumentsAPITerms(Resource):
         """Terms and conditions"""
         file = config().terms
         if file:
-            return send_from_directory(file.directory, filename=file.filename)
+            return send_from_directory(file.directory, filename=file.filename, as_attachment=True, cache_timeout=0)
         return abort(404)

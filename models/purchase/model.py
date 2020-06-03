@@ -35,6 +35,7 @@ class Purchase(db.Model, TrackModifications):
     promoter_commission = db.Column(db.Integer, nullable=False, default=15)
     club_owner_commission = db.Column(db.Integer, nullable=False, default=10)
     administration_costs = db.Column(db.Integer, nullable=False, default=0)
+    vat_percentage = db.Column(db.Integer, nullable=False, default=21)
 
     def __repr__(self):
         return f"Purchase {self.purchase_id} - Party: {self.party} - Tickets: {len(self.tickets)}"
@@ -158,15 +159,15 @@ class Purchase(db.Model, TrackModifications):
 
     @property
     def invoice_ticket_price_no_vat(self):
-        return self.get_ticket_price() * (100 - config().vat)/100
+        return self.get_ticket_price() * (100 - self.vat_percentage)/100
 
     @property
     def invoice_price_no_vat(self):
-        return self.get_price() * (100 - config().vat)/100
+        return self.get_price() * (100 - self.vat_percentage)/100
 
     @property
     def administration_costs_no_vat(self):
-        return self.get_administration_costs() * (100 - config().vat)/100
+        return self.get_administration_costs() * (100 - self.vat_percentage)/100
 
     @property
     def vat(self):

@@ -44,6 +44,7 @@ class PurchaseAPIOrder(Resource):
                 purchase.set_ticket_price(api.payload["ticket_price"])
                 purchase.set_administration_costs(api.payload["administration_costs"])
                 purchase.set_price(party.get_ticket_price() * tickets)
+                purchase.vat_percentage = conf.vat
                 for i in range(tickets):
                     t = Ticket()
                     t.number = i + 1

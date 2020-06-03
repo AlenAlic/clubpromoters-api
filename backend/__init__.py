@@ -5,6 +5,7 @@ from constants import *
 from datetime import datetime
 from ext import db, migrate, login, mail, cors
 import commands
+import os
 
 
 def create_app(config_class=Config):
@@ -22,6 +23,14 @@ def create_app(config_class=Config):
         if current_user.is_authenticated:
             current_user.last_seen = datetime.utcnow()
             db.session.commit()
+
+    # Template filter for converting prices to euro
+    @app.template_filter("euro_format")
+    def euro_format(p):
+        return "€{:,.2f}".format(p)
+
+    # Create static folders (if not available)
+    make_static_folders(app)
 
     # Register blueprints, API, and sockets
     register_blueprints(app)
@@ -55,9 +64,19 @@ def register_blueprints(app):
     from backend.email import bp as email_bp
     app.register_blueprint(email_bp, url_prefix="/email")
 
+    from backend.invoices import bp as invoices_bp
+    app.register_blueprint(invoices_bp, url_prefix="/invoices")
+
     if app.config.get("DEBUG"):
         from backend.testing import bp as testing_bp
         app.register_blueprint(testing_bp, url_prefix="/testing")
 
     import apis
     apis.init_app(app)
+
+
+def make_static_folders(app):
+    # Invoices
+    directory = os.path.join(app.static_folder, INVOICES_FOLDER)
+    if not os.path.exists(directory):
+        os.makedirs(directory)

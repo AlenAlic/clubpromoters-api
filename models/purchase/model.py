@@ -147,6 +147,32 @@ class Purchase(db.Model, TrackModifications):
     def num_tickets(self):
         return len(self.tickets) if self.status == STATUS_PAID else 0
 
+    @property
+    def invoice_number(self):
+        n = f"{self.purchase_id}"
+        return f"{self.created_at.strftime('%Y%m%d')}{n.zfill(6)}"
+
+    @property
+    def invoice_reference(self):
+        return self.mollie_payment_id.replace("tr_", "")
+
+    @property
+    def invoice_ticket_price_no_vat(self):
+        return self.get_ticket_price() * (1 - 0.21)
+
+    @property
+    def invoice_price_no_vat(self):
+        return self.get_price() * (1 - 0.21)
+
+    @property
+    def administration_costs_no_vat(self):
+        return self.get_administration_costs() * (1 - 0.21)
+
+    @property
+    def vat(self):
+        return self.get_price() - self.invoice_price_no_vat + \
+               self.get_administration_costs() - self.administration_costs_no_vat
+
     # PromoterFinances
     def promoter_tickets(self):
         return len(self.tickets)

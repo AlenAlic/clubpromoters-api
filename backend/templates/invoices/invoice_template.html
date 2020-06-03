@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+    {% include "invoices/invoice_template_head.html" %}
+    <body>
+    <img style="float: left; width: 255px; height: 121px;" src="{{url_for('static', filename='invoice_logo.svg')}}" alt="logo" />
+        <div class="invoice-header">
+            <h2>Invoice</h2>
+            <h3>{{ purchase.created_at.strftime("%Y-%m-%d") }}</h3>
+            <h4>{{ purchase.invoice_number }}</h4>
+            <h5>{{ purchase.invoice_reference }}</h5>
+        </div>
+        <div class="invoice-address">
+            <div>clubpromoters.net</div>
+            <div>1234 AB Amsterdam</div>
+            <div>The Netherlands</div>
+            <div>+31 (0) 123-556789</div>
+        </div>
+        <div class="invoice-customer">
+            <div>{{ purchase.full_name }}</div>
+            <div>{{ purchase.email }}</div>
+        </div>
+        <div>
+            <table class="invoice-table invoice-overview">
+                <thead>
+                <tr>
+                    <th>Invoice number</th>
+                    <th>Invoice date</th>
+                    <th>Payment reference</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>{{ purchase.invoice_number }}</td>
+                    <td>{{ purchase.created_at.strftime("%Y-%m-%d") }}</td>
+                    <td>{{ purchase.invoice_reference }}</td>
+                </tr>
+                </tbody>
+            </table>
+            <table class="invoice-table invoice-products">
+                <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>VAT</th>
+                    <th>Price (ex. VAT)</th>
+                    <th>Items</th>
+                    <th>Total (ex. VAT)</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>Tickets to {{ purchase.party.name }}</td>
+                    <td>21%</td>
+                    <td>{{ purchase.invoice_ticket_price_no_vat | euro_format }}</td>
+                    <td>{{ purchase.number_of_tickets }}</td>
+                    <td>{{ purchase.invoice_price_no_vat | euro_format }}</td>
+                </tr>
+                </tbody>
+            </table>
+            <table class="invoice-table invoice-summary">
+                <tbody>
+                <tr>
+                    <th></th>
+                    <th>Total products</th>
+                    <td>{{ purchase.invoice_price_no_vat | euro_format }}</td>
+                </tr>
+                <tr>
+                    <th></th>
+                    <th>Administrative costs</th>
+                    <td>{{ purchase.administration_costs_no_vat | euro_format }}</td>
+                </tr>
+                <tr>
+                    <th></th>
+                    <th>Total (ex. VAT)</th>
+                    <td>{{ (purchase.administration_costs_no_vat + purchase.invoice_price_no_vat) | euro_format }}</td>
+                </tr>
+                <tr>
+                    <th></th>
+                    <th>Total VAT</th>
+                    <td>{{ purchase.vat | euro_format }}</td>
+                </tr>
+                <tr class="invoice-total">
+                    <th></th>
+                    <th style="text-align: right;" class="invoice-total__border">Total</th>
+                    <th class="invoice-total__border">{{ (purchase.get_price() + purchase.get_administration_costs()) | euro_format }}</th>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </body>
+</html>

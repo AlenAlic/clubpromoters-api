@@ -78,7 +78,7 @@ class Purchase(db.Model, TrackModifications):
         return len(self.tickets)
 
     def mollie_description(self):
-        return f"{len(self.tickets)} tickets to {self.party}"
+        return f"{len(self.tickets)} tickets to {self.party.name}"
 
     def mollie_price(self):
         return '{:,.2f}'.format(self.get_price() + self.get_administration_costs())

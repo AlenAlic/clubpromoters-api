@@ -26,6 +26,9 @@ yarn-error.log*
 # Backups
 /backups
 
+/backend/static/uploads
+/backend/static/invoices
+
 # Local overrides of the client side config.
 /public/config/development.json
 /public/config/config.json

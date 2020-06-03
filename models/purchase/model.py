@@ -5,7 +5,7 @@ from flask import current_app, render_template, request
 from flask_login import current_user
 from datetime import datetime
 from constants.mollie import STATUS_OPEN, STATUS_PENDING, STATUS_PAID, STATUS_CANCELED
-from constants import UPLOAD_FOLDER
+from constants import INVOICES_FOLDER
 from utilities import datetime_browser
 from hashlib import sha3_256
 import pyqrcode
@@ -159,7 +159,7 @@ class Purchase(db.Model, TrackModifications):
 
     def generate_invoice(self):
         conf = config()
-        directory = os.path.join(current_app.static_folder, UPLOAD_FOLDER)
+        directory = os.path.join(current_app.static_folder, INVOICES_FOLDER)
         path = os.path.join(directory, self.invoice_file_name)
         HTML(string=render_template("invoices/invoice_template.html", purchase=self, conf=conf),
              base_url=request.base_url).write_pdf(path)

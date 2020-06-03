@@ -31,7 +31,7 @@ class SettingsForm(FlaskForm):
         conf.default_club_owner_commission = self.default_club_owner_commission.data
         conf.default_promoter_commission = self.default_promoter_commission.data
         conf.set_minimum_promoter_commission(self.minimum_promoter_commission.data)
-        conf.mollie_api_key = self.mollie_api_key
+        conf.mollie_api_key = self.mollie_api_key.data
 
 
 class TermsForm(FlaskForm):

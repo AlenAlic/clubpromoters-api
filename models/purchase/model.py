@@ -1,15 +1,18 @@
 from ext import db
 from models.tables import TABLE_PURCHASE, TABLE_PARTY, TABLE_CODE, TABLE_USERS
 from models import TrackModifications
-from flask import current_app
+from flask import current_app, render_template, request
 from flask_login import current_user
 from datetime import datetime
 from constants.mollie import STATUS_OPEN, STATUS_PENDING, STATUS_PAID, STATUS_CANCELED
+from constants import UPLOAD_FOLDER
 from utilities import datetime_browser
 from hashlib import sha3_256
 import pyqrcode
 from io import BytesIO
 from models.configuration import config
+from weasyprint import HTML
+import os
 
 
 class Purchase(db.Model, TrackModifications):
@@ -36,6 +39,8 @@ class Purchase(db.Model, TrackModifications):
     club_owner_commission = db.Column(db.Integer, nullable=False, default=10)
     administration_costs = db.Column(db.Integer, nullable=False, default=0)
     vat_percentage = db.Column(db.Integer, nullable=False, default=21)
+    invoice_path = db.Column(db.String(512), nullable=True)
+    tickets_path = db.Column(db.String(512), nullable=True)
 
     def __repr__(self):
         return f"Purchase {self.purchase_id} - Party: {self.party} - Tickets: {len(self.tickets)}"
@@ -147,6 +152,18 @@ class Purchase(db.Model, TrackModifications):
 
     def num_tickets(self):
         return len(self.tickets) if self.status == STATUS_PAID else 0
+
+    @property
+    def invoice_file_name(self):
+        return f"invoice.{self.purchase_id}.{self.invoice_number}.{self.invoice_reference}.pdf"
+
+    def generate_invoice(self):
+        conf = config()
+        directory = os.path.join(current_app.static_folder, UPLOAD_FOLDER)
+        path = os.path.join(directory, self.invoice_file_name)
+        HTML(string=render_template("invoices/invoice_template.html", purchase=self, conf=conf),
+             base_url=request.base_url).write_pdf(path)
+        self.invoice_path = path
 
     @property
     def invoice_number(self):

@@ -11,7 +11,7 @@ def send_async_email(app, msg):
 
 
 def send_email(subject, recipients, text_body, html_body, cc=None, bcc=None, attachments=None):
-    if current_app.config['DEBUG'] and config().test_email:
+    if current_app.config["DEBUG"] and config().test_email:
         recipients = [config().test_email]
     msg = Message(subject, recipients=recipients, cc=cc, bcc=bcc)
     msg.body = text_body
@@ -19,6 +19,6 @@ def send_email(subject, recipients, text_body, html_body, cc=None, bcc=None, att
     if attachments:
         for name, attachment in attachments.items():
             with current_app.open_resource(attachment) as file:
-                msg.attach(filename=name, data=file.read())
+                msg.attach(filename=name, content_type="text/plain", data=file.read())
     # noinspection PyProtectedMember
     Thread(target=send_async_email, args=(current_app._get_current_object(), msg)).start()

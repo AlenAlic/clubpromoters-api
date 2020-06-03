@@ -158,15 +158,15 @@ class Purchase(db.Model, TrackModifications):
 
     @property
     def invoice_ticket_price_no_vat(self):
-        return self.get_ticket_price() * (1 - 0.21)
+        return self.get_ticket_price() * (100 - config().vat)/100
 
     @property
     def invoice_price_no_vat(self):
-        return self.get_price() * (1 - 0.21)
+        return self.get_price() * (100 - config().vat)/100
 
     @property
     def administration_costs_no_vat(self):
-        return self.get_administration_costs() * (1 - 0.21)
+        return self.get_administration_costs() * (100 - config().vat)/100
 
     @property
     def vat(self):

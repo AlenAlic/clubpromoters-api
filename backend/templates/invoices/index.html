@@ -2,12 +2,24 @@
 
 {% block app_content %}
 <div class="row mt-3">
-    <div class="col-md-6">
+    <div class="col-12 col-md-6">
         <form method="POST" enctype="multipart/form-data">
-            <h3 class="mb-4">Generate invoices from Purchase</h3>
-            {{ form.hidden_tag() }}
-            {{ forms.form_field(form.purchase) }}
-            {{ forms.form_field(form.submit, class_="float-right") }}
+            <h3 class="mb-4">Invoice settings</h3>
+            {{ settings_form.hidden_tag() }}
+            {{ forms.form_field(settings_form.vat) }}
+            {{ forms.form_field(settings_form.invoice_title) }}
+            {{ forms.form_field(settings_form.invoice_address) }}
+            {{ forms.form_field(settings_form.invoice_country) }}
+            {{ forms.form_field(settings_form.invoice_phone) }}
+            {{ forms.form_field(settings_form.save_changes, class_="float-right") }}
+        </form>
+    </div>
+    <div class="col-12 col-md-6">
+        <form method="POST" enctype="multipart/form-data">
+            <h3 class="mb-4">View invoices from Purchase</h3>
+            {{ invoice_form.hidden_tag() }}
+            {{ forms.form_field(invoice_form.purchase) }}
+            {{ forms.form_field(invoice_form.view_invoice, class_="float-right") }}
         </form>
     </div>
 </div>

@@ -10,10 +10,10 @@
             <h5>{{ purchase.invoice_reference }}</h5>
         </div>
         <div class="invoice-address">
-            <div>clubpromoters.net</div>
-            <div>1234 AB Amsterdam</div>
-            <div>The Netherlands</div>
-            <div>+31 (0) 123-556789</div>
+            <div>{{ conf.invoice_title }}</div>
+            <div>{{ conf.invoice_address }}</div>
+            <div>{{ conf.invoice_country }}</div>
+            <div>{{ conf.invoice_phone }}</div>
         </div>
         <div class="invoice-customer">
             <div>{{ purchase.full_name }}</div>
@@ -48,8 +48,8 @@
                 </thead>
                 <tbody>
                 <tr>
-                    <td>Tickets to {{ purchase.party.name }}</td>
-                    <td>21%</td>
+                    <td>Tickets for {{ purchase.party.name }}</td>
+                    <td>{{ conf.vat }}%</td>
                     <td>{{ purchase.invoice_ticket_price_no_vat | euro_format }}</td>
                     <td>{{ purchase.number_of_tickets }}</td>
                     <td>{{ purchase.invoice_price_no_vat | euro_format }}</td>

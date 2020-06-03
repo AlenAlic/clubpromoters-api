@@ -1,8 +1,11 @@
+from flask import request
 from flask_wtf import FlaskForm
-from wtforms import SubmitField
+from wtforms import SubmitField, IntegerField, StringField
 from wtforms.validators import DataRequired
 from wtforms.ext.sqlalchemy.fields import QuerySelectField
 from models import Purchase
+from constants import GET
+from models.configuration import config
 
 
 class TestInvoiceForm(FlaskForm):
@@ -12,4 +15,32 @@ class TestInvoiceForm(FlaskForm):
         self.purchase.query = Purchase.query
 
     purchase = QuerySelectField("Purchase", validators=[DataRequired()])
-    submit = SubmitField("Generate Invoice")
+    view_invoice = SubmitField("View invoice")
+
+
+class InvoiceSettingsForm(FlaskForm):
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        if request.method == GET:
+            conf = config()
+            self.vat.data = conf.vat
+            self.invoice_title.data = conf.invoice_title
+            self.invoice_address.data = conf.invoice_address
+            self.invoice_country.data = conf.invoice_country
+            self.invoice_phone.data = conf.invoice_phone
+
+    vat = IntegerField("VAT percentage", validators=[DataRequired()])
+    invoice_title = StringField("Company name (or website)", validators=[DataRequired()])
+    invoice_address = StringField("Address", validators=[DataRequired()])
+    invoice_country = StringField("Country", validators=[DataRequired()])
+    invoice_phone = StringField("Phone number", validators=[DataRequired()])
+    save_changes = SubmitField("Save changes")
+
+    def save(self):
+        conf = config()
+        conf.vat = self.vat.data
+        conf.invoice_title = self.invoice_title.data
+        conf.invoice_address = self.invoice_address.data
+        conf.invoice_country = self.invoice_country.data
+        conf.invoice_phone = self.invoice_phone.data

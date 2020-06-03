@@ -19,11 +19,11 @@ class File(db.Model, TrackModifications):
 
     @property
     def directory(self):
-        return self.path.rsplit("\\", 1)[0].replace('\\', '/')
+        return self.path.replace('\\', '/').rsplit("\\", 1)[0]
 
     @property
     def filename(self):
-        return self.path.rsplit("\\", 1)[1].replace('\\', '/')
+        return self.path.replace('\\', '/').rsplit("\\", 1)[1]
 
     def url(self):
         relative_url = "{static}{file}"\

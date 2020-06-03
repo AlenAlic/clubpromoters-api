@@ -67,6 +67,9 @@ def register_blueprints(app):
     from backend.invoices import bp as invoices_bp
     app.register_blueprint(invoices_bp, url_prefix="/invoices")
 
+    from backend.settings import bp as settings_bp
+    app.register_blueprint(settings_bp, url_prefix="/settings")
+
     if app.config.get("DEBUG"):
         from backend.testing import bp as testing_bp
         app.register_blueprint(testing_bp, url_prefix="/testing")

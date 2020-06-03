@@ -5,10 +5,13 @@
     {% with url=url_for("admin.index"), title="Database", image="db.png" %}
         {% include "_dashboard_page.html" %}
     {% endwith %}
-    {% with url=url_for("email.index"), title="E-mails", image="email.png" %}
+    {% with url=url_for("settings.index"), title="Settings", image="settings.png" %}
         {% include "_dashboard_page.html" %}
     {% endwith %}
     {% with url=url_for("invoices.index"), title="Invoices", image="invoices.png" %}
+        {% include "_dashboard_page.html" %}
+    {% endwith %}
+    {% with url=url_for("email.index"), title="E-mails", image="email.png" %}
         {% include "_dashboard_page.html" %}
     {% endwith %}
     {% if config.get("DEBUG") %}

@@ -1,11 +1,12 @@
 from flask_restx import Namespace, Resource, abort, fields
 from ext import db
-from flask import request, g, abort
+from flask import request, abort
 from models import Purchase
 from mollie.api.client import Client
 from mollie.api.error import Error
 from .email import send_purchased_tickets
 from constants.mollie import STATUS_PAID, STATUS_PENDING, STATUS_OPEN, STATUS_CANCELED
+from models.configuration import config
 
 
 api = Namespace("mollie", description="Mollie interaction")
@@ -23,8 +24,9 @@ class MollieAPIWebhook(Resource):
     def post(self):
         """Create purchase and send data to Mollie"""
         try:
+            conf = config()
             mollie_client = Client()
-            mollie_client.set_api_key(g.mollie)
+            mollie_client.set_api_key(conf.mollie)
             if "id" not in request.form:
                 abort(404, "Unknown payment id")
             payment_id = api.payload["id"]

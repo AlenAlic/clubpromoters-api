@@ -2,8 +2,9 @@ from flask_restx import Namespace, Resource, abort, fields
 from ext import db
 from models import Party, Ticket, Purchase
 from models import get_code_from_request, code_required
-from flask import url_for, request, g, current_app, Response
+from flask import url_for, request, current_app, Response
 from mollie.api.client import Client
+from models.configuration import config
 
 
 api = Namespace("purchase", description="Purchase")
@@ -27,6 +28,7 @@ class PurchaseAPIOrder(Resource):
     @code_required
     def post(self, party_id):
         """Create Purchase and redirect to Mollie"""
+        conf = config()
         party = Party.query.filter(Party.party_id == party_id).first()
         tickets = api.payload["tickets"]
         if party:
@@ -51,7 +53,7 @@ class PurchaseAPIOrder(Resource):
                 purchase.set_hash()
                 db.session.commit()
                 mollie_client = Client()
-                mollie_client.set_api_key(g.mollie)
+                mollie_client.set_api_key(conf.mollie)
                 payment_data = {
                     "amount": {
                         "currency": "EUR",

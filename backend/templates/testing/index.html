@@ -2,15 +2,24 @@
 
 {% block app_content %}
 <div class="row mt-3">
-    <div class="col-md-6">
+    <div class="col-12 col-md-6">
         <form method="POST" enctype="multipart/form-data">
             <h3 class="mb-4">Create accounts</h3>
-            {{ form.hidden_tag() }}
-            {{ forms.form_field(form.number) }}
-            {{ forms.form_field(form.password) }}
-            {{ forms.form_field(form.club_owners) }}
-            {{ forms.form_field(form.promoters) }}
-            {{ forms.form_field(form.submit, class_="float-right") }}
+            {{ test_accounts_form.hidden_tag() }}
+            {{ forms.form_field(test_accounts_form.number) }}
+            {{ forms.form_field(test_accounts_form.password) }}
+            {{ forms.form_field(test_accounts_form.club_owners) }}
+            {{ forms.form_field(test_accounts_form.promoters) }}
+            {{ forms.form_field(test_accounts_form.create_accounts, class_="float-right") }}
+        </form>
+    </div>
+    <div class="col-12 col-md-6">
+        <form method="POST" enctype="multipart/form-data">
+            <h3 class="mb-4">Testing e-mail address</h3>
+            {{ test_email_form.hidden_tag() }}
+            {{ forms.form_field(test_email_form.test_email) }}
+            <div class="mb-3"><small>In testing mode, all outgoing e-mails will be intercepted and sent to this address instead.</small></div>
+            {{ forms.form_field(test_email_form.save_email, class_="float-right") }}
         </form>
     </div>
 </div>

@@ -6,6 +6,7 @@
         <form method="POST" enctype="multipart/form-data">
             <h3 class="mb-4">Invoice settings</h3>
             {{ settings_form.hidden_tag() }}
+            {{ forms.form_field(settings_form.administration_costs) }}
             {{ forms.form_field(settings_form.vat) }}
             {{ forms.form_field(settings_form.invoice_title) }}
             {{ forms.form_field(settings_form.invoice_address) }}

@@ -1,7 +1,7 @@
 from flask import request
 from flask_wtf import FlaskForm
-from wtforms import SubmitField, IntegerField, StringField
-from wtforms.validators import DataRequired
+from wtforms import SubmitField, IntegerField, StringField, FloatField
+from wtforms.validators import DataRequired, NumberRange
 from wtforms.ext.sqlalchemy.fields import QuerySelectField
 from models import Purchase
 from constants import GET
@@ -24,12 +24,14 @@ class InvoiceSettingsForm(FlaskForm):
         super().__init__(**kwargs)
         if request.method == GET:
             conf = config()
+            self.administration_costs.data = conf.get_administration_costs()
             self.vat.data = conf.vat
             self.invoice_title.data = conf.invoice_title
             self.invoice_address.data = conf.invoice_address
             self.invoice_country.data = conf.invoice_country
             self.invoice_phone.data = conf.invoice_phone
 
+    administration_costs = FloatField("Administration costs €", validators=[DataRequired(), NumberRange(0)])
     vat = IntegerField("VAT percentage", validators=[DataRequired()])
     invoice_title = StringField("Company name (or website)", validators=[DataRequired()])
     invoice_address = StringField("Address", validators=[DataRequired()])
@@ -39,6 +41,7 @@ class InvoiceSettingsForm(FlaskForm):
 
     def save(self):
         conf = config()
+        conf.set_administration_costs(self.administration_costs.data)
         conf.vat = self.vat.data
         conf.invoice_title = self.invoice_title.data
         conf.invoice_address = self.invoice_address.data

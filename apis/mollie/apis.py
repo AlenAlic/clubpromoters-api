@@ -1,4 +1,4 @@
-from flask_restx import Namespace, Resource, abort, fields
+from flask_restx import Namespace, Resource, abort
 from ext import db
 from flask import request, abort
 from models import Purchase
@@ -16,9 +16,6 @@ api = Namespace("mollie", description="Mollie interaction")
 class MollieAPIWebhook(Resource):
 
     @api.doc(security=None)
-    @api.expect(api.model("MollieWebhook", {
-        "id": fields.String(required=True),
-    }), validate=True)
     @api.response(200, "Redirected to Mollie")
     @api.response(404, "Purchase not found")
     def post(self):
@@ -29,7 +26,7 @@ class MollieAPIWebhook(Resource):
             mollie_client.set_api_key(conf.mollie)
             if "id" not in request.form:
                 abort(404, "Unknown payment id")
-            payment_id = api.payload["id"]
+            payment_id = request.form["id"]
             payment = mollie_client.payments.get(payment_id)
             purchase = Purchase.query.filter(Purchase.purchase_id == payment.metadata["purchase_id"]).first()
             if purchase is not None:

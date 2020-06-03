@@ -2,7 +2,7 @@ from flask import render_template, redirect, url_for, flash
 from backend.email import bp
 from constants import GET
 from mailing.util import filtered_form
-from models import User
+from models import User, Purchase
 from utilities import activation_code
 
 
@@ -12,6 +12,8 @@ GROUP_AUTH = "auth"
 NAME_ACTIVATE_ACCOUNT = "activate_account"
 NAME_RESET_PASSWORD = "reset_password"
 NAME_PASSWORD_CHANGED = "password_changed"
+GROUP_PURCHASE = "purchase"
+NAME_PURCHASE = "purchased_tickets"
 
 
 @bp.route("/", methods=[GET])
@@ -29,6 +31,12 @@ def index():
                 NAME_ACTIVATE_ACCOUNT: "Account activation",
                 NAME_RESET_PASSWORD: "New password requested",
                 NAME_PASSWORD_CHANGED: "Password has been changed",
+            }
+        },
+        {
+            "group": GROUP_PURCHASE,
+            "emails": {
+                NAME_PURCHASE: "Confirmed purchase",
             }
         }
     ]
@@ -73,5 +81,9 @@ def template(group, name):
             return render_template(path, user=usr, token=usr.get_reset_password_token())
         if name == NAME_PASSWORD_CHANGED:
             return render_template(path)
+    if group == GROUP_PURCHASE:
+        if name == NAME_PURCHASE:
+            p = Purchase.query.first()
+            return render_template(path, purchase=p)
     flash("Dit not find e-mail template.")
     return redirect(url_for("email.index"))

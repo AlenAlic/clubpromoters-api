@@ -88,12 +88,12 @@ class OrganizerAPICreateClubOwner(Resource):
 class OrganizerAPICreateLocation(Resource):
 
     @api.expect(api.model("NewLocation", {
-        "user_id": fields.String(required=True),
+        "user_id": fields.Integer(required=True),
         "name": fields.String(required=True),
         "street": fields.String(required=True),
-        "street_number": fields.String(required=True),
+        "street_number": fields.Integer(required=True),
         "street_number_addition": fields.String(required=True),
-        "postal_code": fields.String(required=True),
+        "postal_code": fields.Integer(required=True),
         "postal_code_letters": fields.String(required=True),
         "city": fields.String(required=True),
         "maps_url": fields.String(),
@@ -123,7 +123,7 @@ class OrganizerAPICreateLocation(Resource):
 class OrganizerAPICreateHostess(Resource):
 
     @api.expect(api.model("NewHostess", {
-        "user_id": fields.String(required=True),
+        "user_id": fields.Integer(required=True),
         "email": fields.String(required=True),
         "first_name": fields.String(required=True),
         "last_name": fields.String(required=True),
@@ -156,7 +156,7 @@ class OrganizerAPICreateHostess(Resource):
         "first_name": fields.String(required=True),
         "last_name": fields.String(required=True),
         "commission": fields.Integer(required=True),
-        "code_id": fields.String(required=True),
+        "code_id": fields.Integer(required=True),
     }), validate=True)
     @api.response(200, "Promoter created")
     @login_required

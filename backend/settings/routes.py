@@ -29,10 +29,12 @@ def index():
             if pdf_file:
                 conf.terms = pdf_file
                 db.session.commit()
+                flash("New terms uploaded.")
             return redirect(url_for("settings.index"))
         if remove_terms_form.remove_terms.name in request.form:
             conf.terms_id = None
             db.session.commit()
+            flash("Terms removed. There are no terms available for customers to view.", "warning")
             return redirect(url_for("settings.index"))
     return render_template("settings/index.html", settings_form=settings_form, terms_form=terms_form,
                            remove_terms_form=remove_terms_form, conf=conf)

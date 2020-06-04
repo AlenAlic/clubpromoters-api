@@ -12,6 +12,7 @@ from .purchase import api as purchase
 from .admin import api as admin_api
 from .mollie import api as mollie_api
 from .organizer import api as organizer
+from .code import api as code
 
 
 authorizations = {
@@ -31,6 +32,7 @@ api = Api(bp, doc="/doc", authorizations=authorizations, security="bearer",
 api.add_namespace(admin_api)
 api.add_namespace(auth)
 api.add_namespace(club_owner)
+api.add_namespace(code)
 api.add_namespace(documents)
 api.add_namespace(hostess)
 api.add_namespace(mollie_api)

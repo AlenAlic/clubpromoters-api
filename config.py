@@ -33,8 +33,8 @@ class Config(object):
 
     PRETTY_URL = os.environ.get('PRETTY_URL') or "127.0.0.1:8080"
     BASE_URL = "https://" + PRETTY_URL
-    ACTIVATE_URL = BASE_URL + "/auth/activate"
-    RESET_URL = BASE_URL + "/auth/password/reset"
+    ACTIVATE_URL = BASE_URL + "/activate/"
+    RESET_URL = BASE_URL + "/password/reset/"
 
     allowed_urls = os.environ.get("ALLOWED_URLS")
     ALLOWED_URLS = json.loads(allowed_urls) if allowed_urls else ["http://127.0.0.1:8080"]

@@ -146,17 +146,21 @@ class Party(db.Model, TrackModifications):
         }
 
     # PastParties
+    @property
+    def paid_purchases(self):
+        return [p for p in self.purchases if p.status == STATUS_PAID]
+
     def party_income(self):
-        return sum([p.get_price() for p in self.purchases])
+        return sum([p.get_price() for p in self.paid_purchases])
 
     def party_refunds(self):
-        return sum([p.purchase_refund() for p in self.purchases])
+        return sum([p.purchase_refund() for p in self.paid_purchases])
 
     def party_promoter_cut(self):
-        return sum([p.purchase_promoter_cut() for p in self.purchases])
+        return sum([p.purchase_promoter_cut() for p in self.paid_purchases])
 
     def party_club_owner_cut(self):
-        return sum([p.purchase_club_owner_cut() for p in self.purchases])
+        return sum([p.purchase_club_owner_cut() for p in self.paid_purchases])
 
     def party_profit(self):
         return self.party_income() - self.party_refunds() - self.party_promoter_cut() - self.party_club_owner_cut()

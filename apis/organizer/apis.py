@@ -315,9 +315,9 @@ class OrganizerAPICodesDeactivate(Resource):
 class OrganizerAPICreateNewParty(Resource):
 
     @api.expect(api.model("CreateNewParty", {
-        "club": fields.String(required=True),
+        "user_id": fields.Integer(required=True),
         "name": fields.String(required=True),
-        "location": fields.String(required=True),
+        "location_id": fields.Integer(required=True),
         "start_date": fields.String(required=True),
         "end_date": fields.String(required=True),
         "description": fields.String(),
@@ -326,7 +326,7 @@ class OrganizerAPICreateNewParty(Resource):
         "club_owner_commission": fields.Integer(required=True),
         "promoter_commission": fields.Integer(required=True),
         "images": fields.List(fields.Integer(required=True)),
-        "logo": fields.String(required=True),
+        "logo_id": fields.Integer(required=True),
         "interval": fields.Integer(required=True),
     }), validate=True)
     @api.response(200, "Code deactivated")
@@ -334,10 +334,10 @@ class OrganizerAPICreateNewParty(Resource):
     @requires_access_level(ACCESS_ORGANIZER)
     def post(self):
         """Create new party"""
-        club_owner = User.query.filter(User.user_id == api.payload["club"]).first()
+        club_owner = User.query.filter(User.user_id == api.payload["user_id"]).first()
         party = Party()
         party.name = api.payload["name"]
-        party.location_id = api.payload["location"]
+        party.location_id = api.payload["location_id"]
         party.party_start_datetime = datetime_python(api.payload["start_date"])
         party.party_end_datetime = datetime_python(api.payload["end_date"])
         if "description" in api.payload:
@@ -353,7 +353,7 @@ class OrganizerAPICreateNewParty(Resource):
             party_file.party = party
             party_file.file_id = file_id
             party_file.order = idx
-        party.logo_id = api.payload["logo"]
+        party.logo_id = api.payload["logo_id"]
         party.interval = api.payload["interval"]
         db.session.add(party)
         db.session.commit()

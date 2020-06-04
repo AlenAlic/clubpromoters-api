@@ -10,7 +10,7 @@ api = Namespace("admin", description="Admin")
 
 
 @api.route("/switch")
-class AuthAPISwitch(Resource):
+class AdminAPISwitch(Resource):
 
     @api.response(200, "User list")
     @login_required
@@ -18,14 +18,11 @@ class AuthAPISwitch(Resource):
     def get(self):
         """Get list of users that you can switch to"""
         users = User.query.filter(User.access != ACCESS_ADMIN, User.is_active.is_(True)).all()
-        return [{
-            "text": u.email,
-            "value": u.user_id
-        } for u in users]
+        return [u.json() for u in users]
 
 
 @api.route("/switch/<int:user_id>")
-class AuthAPISwitchUser(Resource):
+class SwitchUser(Resource):
 
     @api.response(200, "User created")
     @api.response(400, "Active user not found")
@@ -40,7 +37,7 @@ class AuthAPISwitchUser(Resource):
 
 
 @api.route("/has_organizer")
-class AdminAPIHasOrganizer(Resource):
+class HasOrganizer(Resource):
 
     @api.response(200, "Has organiser account")
     @login_required
@@ -52,11 +49,12 @@ class AdminAPIHasOrganizer(Resource):
 
 
 @api.route("/create_organizer_account")
-class AdminAPICreateOrganizer(Resource):
+class CreateOrganizer(Resource):
 
     @api.expect(api.model("CreateOrganizer", {
         "email": fields.String(required=True),
-        # "first_name": fields.String(required=True),
+        "first_name": fields.String(required=True),
+        "last_name": fields.String(required=True),
     }), validate=True)
     @api.response(200, "User created")
     @login_required
@@ -65,10 +63,23 @@ class AdminAPICreateOrganizer(Resource):
         """Create organizer account"""
         organizer = User()
         organizer.email = api.payload["email"]
-        # organizer.first_name = api.payload["first_name"]
+        organizer.first_name = api.payload["first_name"]
+        organizer.last_name = api.payload["last_name"]
         organizer.access = ACCESS_ORGANIZER
         organizer.auth_code = activation_code()
         db.session.add(organizer)
         db.session.commit()
         send_activation_email(organizer)
         return
+
+
+@api.route("/organizers")
+class Organizers(Resource):
+
+    @api.response(200, "User list")
+    @login_required
+    @requires_access_level(ACCESS_ADMIN)
+    def get(self):
+        """Get list of organizers"""
+        users = User.query.filter(User.access == ACCESS_ORGANIZER).all()
+        return [u.json() for u in users]

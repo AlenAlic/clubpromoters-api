@@ -63,6 +63,7 @@ class OrganizerAPICreateClubOwner(Resource):
         "email": fields.String(required=True),
         "commission": fields.Integer(required=True),
         "first_name": fields.String(required=True),
+        "last_name": fields.String(required=True),
     }), validate=True)
     @api.response(200, "Club Owner created")
     @login_required
@@ -73,7 +74,8 @@ class OrganizerAPICreateClubOwner(Resource):
         account.club = api.payload["club"]
         account.email = api.payload["email"]
         account.commission = api.payload["commission"]
-        account.commission = api.payload["first_name"]
+        account.first_name = api.payload["first_name"]
+        account.last_name = api.payload["last_name"]
         account.auth_code = activation_code()
         account.access = ACCESS_CLUB_OWNER
         db.session.add(account)

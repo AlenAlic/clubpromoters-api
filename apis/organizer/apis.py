@@ -181,7 +181,7 @@ class OrganizerAPICreateHostess(Resource):
 class OrganizerAPIUpdateUserCommission(Resource):
 
     @api.expect(api.model("UpdateUserCommission", {
-        "user_id": fields.String(required=True),
+        "user_id": fields.Integer(required=True),
         "commission": fields.Integer(required=True),
     }), validate=True)
     @api.response(200, "User commission updated")
@@ -282,8 +282,8 @@ class OrganizerAPICodes(Resource):
 class OrganizerAPIAssignCodeToPromoter(Resource):
 
     @api.expect(api.model("UserCode", {
-        "user_id": fields.String(required=True),
-        "code_id": fields.String(required=True),
+        "user_id": fields.Integer(required=True),
+        "code_id": fields.Integer(required=True),
     }), validate=True)
     @api.response(200, "Code assigned")
     @login_required
@@ -300,10 +300,6 @@ class OrganizerAPIAssignCodeToPromoter(Resource):
 @api.route("/codes/deactivate/<int:code_id>")
 class OrganizerAPICodesDeactivate(Resource):
 
-    @api.expect(api.model("UserCode", {
-        "user_id": fields.String(required=True),
-        "code_id": fields.String(required=True),
-    }), validate=True)
     @api.response(200, "Code deactivated")
     @login_required
     @requires_access_level(ACCESS_ORGANIZER)

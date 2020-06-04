@@ -29,6 +29,7 @@ def index():
                     count = User.query.filter(User.access == ACCESS_CLUB_OWNER).count() + 1
                     for i in range(count, count + test_accounts_form.number.data):
                         club_owner = User()
+                        club_owner.club = f"Club {CLUB_OWNER}{i}"
                         club_owner.username = f"{CLUB_OWNER}{i}"
                         club_owner.email = f"{CLUB_OWNER}{i}@test.com"
                         club_owner.access = ACCESS_CLUB_OWNER
@@ -38,7 +39,8 @@ def index():
                         db.session.add(club_owner)
                         hostess = User()
                         hostess.club_owner = club_owner
-                        hostess.username = f"{HOSTESS}{i}"
+                        hostess.first_name = f"{HOSTESS}{i}"
+                        hostess.last_name = "Test"
                         hostess.email = f"{HOSTESS}{i}@test.com"
                         hostess.access = ACCESS_HOSTESS
                         hostess.is_active = True
@@ -59,7 +61,8 @@ def index():
                     count = User.query.filter(User.access == ACCESS_PROMOTER).count() + 1
                     for i in range(count, count + test_accounts_form.number.data):
                         promoter = User()
-                        promoter.username = f"{PROMOTER}{i}"
+                        promoter.first_name = f"{PROMOTER}{i}"
+                        promoter.last_name = "Test"
                         promoter.email = f"{PROMOTER}{i}@test.com"
                         promoter.access = ACCESS_PROMOTER
                         promoter.is_active = True

@@ -64,7 +64,7 @@ class UserAPIProfile(Resource):
     @api.response(200, "Images uploaded")
     @api.response(404, "User not found")
     @login_required
-    def patch(self, user_id):
+    def post(self, user_id):
         """Upload images"""
         user = User.query.filter(User.user_id == user_id).first()
         if user:

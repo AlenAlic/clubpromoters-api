@@ -365,6 +365,7 @@ class OrganizerAPIEditParty(Resource):
 
     @api.expect(api.model("CreateNewParty", {
         "name": fields.String(required=True),
+        "description": fields.String(),
         "number_of_tickets": fields.Integer(required=True),
         "ticket_price": fields.Float(required=True),
         "club_owner_commission": fields.Integer(required=True),
@@ -383,6 +384,8 @@ class OrganizerAPIEditParty(Resource):
             party.set_ticket_price(api.payload["ticket_price"])
             party.club_owner_commission = api.payload["club_owner_commission"]
             party.promoter_commission = api.payload["promoter_commission"]
+            if "description" in api.payload:
+                party.description = api.payload["description"]
             db.session.commit()
             return
         return abort(404)

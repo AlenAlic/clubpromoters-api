@@ -1,3 +1,9 @@
+import pytz
+
+
+LOCAL_TIMEZONE = pytz.timezone("Europe/Amsterdam")
+
+
 # Second conversions
 SECONDS_QUARTER = 900
 SECONDS_HOUR = 3600

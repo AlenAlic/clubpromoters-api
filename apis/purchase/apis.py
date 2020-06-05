@@ -45,6 +45,7 @@ class PurchaseAPIOrder(Resource):
                 purchase.set_administration_costs(api.payload["administration_costs"])
                 purchase.set_price(party.get_ticket_price() * tickets)
                 purchase.vat_percentage = conf.vat
+                purchase.minimum_promoter_commission = purchase.code.user.minimum_promoter_commission
                 for i in range(tickets):
                     t = Ticket()
                     t.number = i + 1

@@ -35,12 +35,13 @@ class Purchase(db.Model, TrackModifications):
     code = db.relationship('Code', back_populates='purchases')
     promoter_id = db.Column(db.Integer, db.ForeignKey(f"{TABLE_USERS}.user_id"))
     promoter = db.relationship('User', back_populates='purchases')
-    promoter_commission = db.Column(db.Integer, nullable=False, default=15)
-    club_owner_commission = db.Column(db.Integer, nullable=False, default=10)
+    promoter_commission = db.Column(db.Integer, nullable=False, default=0)
+    club_owner_commission = db.Column(db.Integer, nullable=False, default=0)
     administration_costs = db.Column(db.Integer, nullable=False, default=0)
     vat_percentage = db.Column(db.Integer, nullable=False, default=21)
     invoice_path = db.Column(db.String(512), nullable=True)
     tickets_path = db.Column(db.String(512), nullable=True)
+    minimum_promoter_commission = db.Column(db.Integer, nullable=False, default=0)
 
     def __repr__(self):
         return f"Purchase {self.purchase_id} - Party: {self.party} - Tickets: {len(self.tickets)}"

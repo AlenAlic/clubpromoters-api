@@ -25,6 +25,7 @@ class File(db.Model, TrackModifications):
     def filename(self):
         return self.path.replace("\\", "/").rsplit("/", 1)[1]
 
+    @property
     def url(self):
         relative_url = "{static}{file}"\
             .format(static=current_app.static_url_path, file=self.path.split("static")[1].replace("\\", "/"))
@@ -34,7 +35,7 @@ class File(db.Model, TrackModifications):
     def json(self):
         data = {
             "id": self.file_id,
-            "url": self.url(),
+            "url": self.url,
             "name": self.name,
             "logo": self.logo,
             "user_id": self.user_id,

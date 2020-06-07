@@ -3,7 +3,7 @@ from flask_login import current_user
 from ext import db
 from models import login_required, requires_access_level, ACCESS_ORGANIZER, ACCESS_CLUB_OWNER, ACCESS_HOSTESS, \
     ACCESS_PROMOTER
-from models import User, Location, Code, Party, PartyFile, Purchase, Refund
+from models import User, Location, Code, Party, PartyFile, Purchase, Refund, Ticket
 from models.party.constants import NORMAL
 from datetime import datetime
 from models.configuration import config
@@ -16,6 +16,7 @@ from mollie.api.client import Client
 from utilities import last_month_datetime, upload_file
 from sqlalchemy import func
 from flask import request
+from utilities import euro_to_cents
 
 
 api = Namespace("organizer", description="Organizer")
@@ -30,29 +31,6 @@ class OrganizerAPIConfig(Resource):
     def get(self):
         """Get config"""
         return config().json()
-
-    @api.expect(api.model("Config", {
-        "default_club_owner_commission": fields.String(required=True),
-        "default_promoter_commission": fields.String(required=True),
-        "mollie_api_key": fields.String(required=True),
-        "minimum_promoter_commission": fields.Float(required=True),
-        "administration_costs": fields.Float(required=True),
-        "test_email": fields.String(),
-    }), validate=True)
-    @api.response(200, "Config")
-    @login_required
-    @requires_access_level(ACCESS_ORGANIZER)
-    def post(self):
-        """Update config"""
-        c = config()
-        c.default_club_owner_commission = api.payload["default_club_owner_commission"]
-        c.default_promoter_commission = api.payload["default_promoter_commission"]
-        c.mollie_api_key = api.payload["mollie_api_key"]
-        c.test_email = api.payload["test_email"]
-        c.set_minimum_promoter_commission(api.payload["minimum_promoter_commission"])
-        c.set_administration_costs(api.payload["administration_costs"])
-        db.session.commit()
-        return c.json()
 
 
 @api.route("/create_new_club_owner")
@@ -343,7 +321,7 @@ class OrganizerAPICreateNewParty(Resource):
         if "description" in api.payload:
             party.description = api.payload["description"]
         party.num_available_tickets = api.payload["number_of_tickets"]
-        party.set_ticket_price(api.payload["ticket_price"])
+        party.ticket_price = euro_to_cents(api.payload["ticket_price"])
         party.status = NORMAL
         party.club_owner_commission = api.payload["club_owner_commission"]
         party.club_owner = club_owner
@@ -381,7 +359,7 @@ class OrganizerAPIEditParty(Resource):
         if party:
             party.name = api.payload["name"]
             party.num_available_tickets = api.payload["number_of_tickets"]
-            party.set_ticket_price(api.payload["ticket_price"])
+            party.ticket_price = euro_to_cents(api.payload["ticket_price"])
             party.club_owner_commission = api.payload["club_owner_commission"]
             party.promoter_commission = api.payload["promoter_commission"]
             if "description" in api.payload:
@@ -477,8 +455,9 @@ class OrganizerAPIPurchase(Resource):
 class OrganizerAPIRefund(Resource):
 
     @api.expect(api.model("Refund", {
-        "purchase_id": fields.String(required=True),
+        "purchase_id": fields.Integer(required=True),
         "amount": fields.Float(required=True),
+        "tickets": fields.List(fields.Integer(required=True)),
     }), validate=True)
     @api.response(200, "Refund given")
     @api.response(400, "Payment could not be refunded")
@@ -490,17 +469,16 @@ class OrganizerAPIRefund(Resource):
         mollie_client = Client()
         mollie_client.set_api_key(config().mollie)
 
-        purchase_id = api.payload["purchase_id"]
         amount = api.payload["amount"]
         mollie_value = "{:,.2f}".format(float(amount))
 
-        purchase = Purchase.query.filter(Purchase.purchase_id == purchase_id).first()
+        purchase = Purchase.query.filter(Purchase.purchase_id == api.payload["purchase_id"]).first()
         mollie_id = purchase.mollie_payment_id
         payment = mollie_client.payments.get(mollie_id)
 
         if payment is not None:
             ref = Refund()
-            ref.set_price(float(mollie_value))
+            ref.price = euro_to_cents(amount)
             ref.purchase = purchase
             db.session.add(ref)
             db.session.commit()
@@ -512,6 +490,9 @@ class OrganizerAPIRefund(Resource):
                 }
                 r = mollie_client.payment_refunds.with_parent_id(mollie_id).create(data)
                 ref.mollie_refund_id = r["id"]
+                tickets = Ticket.query.filter(Ticket.ticket_id.in_(api.payload["tickets"])).all()
+                for ticket in tickets:
+                    ticket.refunded = True
                 db.session.commit()
                 return purchase.json()
             else:
@@ -537,20 +518,3 @@ class OrganizerAPICommissions(Resource):
         club_owners = list(set([p.party.club_owner_id for p in purchase if p.party.club_owner_id is not None]))
         u = User.query.filter(User.user_id.in_(promoters + club_owners), User.is_active.is_(True)).all()
         return [user.commissions_json(purchase) for user in u]
-
-
-@api.route("/upload_terms")
-class OrganizerAPIUploadTerms(Resource):
-
-    @api.response(200, "Config")
-    @login_required
-    @requires_access_level(ACCESS_ORGANIZER)
-    def post(self):
-        """Upload terms"""
-        files = request.files
-        pdf_file = upload_file(files["terms"], current_user)
-        c = config()
-        if pdf_file:
-            c.terms = pdf_file
-            db.session.commit()
-        return c.json()

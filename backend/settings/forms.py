@@ -4,6 +4,7 @@ from wtforms import SubmitField, IntegerField, StringField, FloatField, FileFiel
 from wtforms.validators import DataRequired, NumberRange
 from constants import GET
 from models.configuration import config
+from utilities import euro_to_cents, cents_to_euro
 
 
 class SettingsForm(FlaskForm):
@@ -14,7 +15,7 @@ class SettingsForm(FlaskForm):
             conf = config()
             self.default_club_owner_commission.data = conf.default_club_owner_commission
             self.default_promoter_commission.data = conf.default_promoter_commission
-            self.minimum_promoter_commission.data = conf.get_minimum_promoter_commission()
+            self.minimum_promoter_commission.data = cents_to_euro(conf.minimum_promoter_commission)
             self.mollie_api_key.data = conf.mollie_api_key
 
     default_club_owner_commission = IntegerField("Default Club Owner commission %",
@@ -30,7 +31,7 @@ class SettingsForm(FlaskForm):
         conf = config()
         conf.default_club_owner_commission = self.default_club_owner_commission.data
         conf.default_promoter_commission = self.default_promoter_commission.data
-        conf.set_minimum_promoter_commission(self.minimum_promoter_commission.data)
+        conf.minimum_promoter_commission = euro_to_cents(self.minimum_promoter_commission.data)
         conf.mollie_api_key = self.mollie_api_key.data
 
 

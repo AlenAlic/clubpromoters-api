@@ -2,7 +2,7 @@ from ext import db
 from models.tables import TABLE_REFUND, TABLE_PURCHASE
 from models import TrackModifications
 from datetime import datetime
-from utilities import datetime_browser
+from utilities import datetime_browser, cents_to_euro
 
 
 class Refund(db.Model, TrackModifications):
@@ -17,16 +17,10 @@ class Refund(db.Model, TrackModifications):
     def __repr__(self):
         return f"{self.refund_id}: {self.mollie_refund_id}"
 
-    def set_price(self, price_float):
-        self.price = int(price_float * 100)
-
-    def get_price(self):
-        return float(self.price)/100
-
     def json(self):
         return {
             "refund_id": self.refund_id,
-            "price": self.get_price(),
+            "price": cents_to_euro(self.price),
             "mollie_refund_id": self.mollie_refund_id,
             "date": datetime_browser(self.refund_datetime),
         }

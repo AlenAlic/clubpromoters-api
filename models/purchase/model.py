@@ -6,7 +6,7 @@ from flask_login import current_user
 from datetime import datetime
 from constants.mollie import STATUS_OPEN, STATUS_PENDING, STATUS_PAID, STATUS_CANCELED
 from constants import INVOICES_FOLDER
-from utilities import datetime_browser
+from utilities import datetime_browser, cents_to_euro
 from hashlib import sha3_256
 import pyqrcode
 from io import BytesIO
@@ -46,18 +46,6 @@ class Purchase(db.Model, TrackModifications):
     def __repr__(self):
         return f"Purchase {self.purchase_id} - Party: {self.party} - Tickets: {len(self.tickets)}"
 
-    def set_ticket_price(self, price_float):
-        self.ticket_price = int(float(price_float) * 100)
-
-    def get_ticket_price(self):
-        return float(self.ticket_price)/100
-
-    def set_administration_costs(self, price_float):
-        self.administration_costs = int(float(price_float) * 100)
-
-    def get_administration_costs(self):
-        return float(self.administration_costs)/100
-
     @property
     def full_name(self):
         if self.first_name and self.last_name:
@@ -68,12 +56,6 @@ class Purchase(db.Model, TrackModifications):
         self.promoter_commission = max(self.party.promoter_commission, self.promoter.commission)
         self.club_owner_commission = min(self.party.club_owner_commission, self.party.club_owner.commission)
 
-    def set_price(self, price_float):
-        self.price = int(price_float * 100)
-
-    def get_price(self):
-        return float(self.price)/100
-
     @property
     def number_of_tickets(self):
         return len(self.tickets)
@@ -82,7 +64,7 @@ class Purchase(db.Model, TrackModifications):
         return f"{len(self.tickets)} tickets to {self.party.name}"
 
     def mollie_price(self):
-        return '{:,.2f}'.format(self.get_price() + self.get_administration_costs())
+        return '{:,.2f}'.format(cents_to_euro(self.price + self.administration_costs))
 
     def set_hash(self):
         purchase_hash = self.calculate_hash()
@@ -119,10 +101,10 @@ class Purchase(db.Model, TrackModifications):
             "id": self.purchase_id,
             "first_name": self.first_name,
             "last_name": self.last_name,
-            "name": self.full_name,
+            "full_name": self.full_name,
             "email": self.email,
             "number_of_tickets": self.number_of_tickets,
-            "ticket_price": self.get_ticket_price(),
+            "ticket_price": cents_to_euro(self.ticket_price),
             "party": {
                 "id": self.party.party_id,
                 "club": self.party.club_owner.club,
@@ -130,29 +112,35 @@ class Purchase(db.Model, TrackModifications):
                 "start_date": datetime_browser(self.party.party_start_datetime),
                 "end_date": datetime_browser(self.party.party_end_datetime),
             },
-            "administration_costs": self.administration_costs,
+            "administration_costs": cents_to_euro(self.administration_costs),
         }
         if current_user.is_organizer:
             data.update({
                 "entrance_code": self.entrance_code(),
                 "purchase_date": datetime_browser(self.purchase_datetime),
-                "price": self.get_price(),
+                "price": cents_to_euro(self.price),
                 "refunds": [r.json() for r in self.refunds],
                 "status": self.status,
                 "mollie_payment_id": self.mollie_payment_id,
                 "mollie_description": self.mollie_description(),
+                "tickets": [t.json() for t in self.tickets],
             })
         if current_user.is_hostess:
             data.update({
                 "entrance_code": self.entrance_code(),
                 "paid": self.status == STATUS_PAID,
                 "tickets": [t.json() for t in self.tickets],
-                "available": len([t for t in self.tickets if t.available()]) > 0,
+                "available": len([t for t in self.tickets if t.is_available]) > 0,
             })
         return data
 
-    def num_tickets(self):
-        return len(self.tickets) if self.status == STATUS_PAID else 0
+    @property
+    def tickets_available_for_refund(self):
+        return min([self.number_of_tickets, (self.price - self.refunded_amount) / self.ticket_price])
+
+    @property
+    def refunded_amount(self):
+        return sum([r.price for r in self.refunds])
 
     @property
     def invoice_file_name(self):
@@ -177,24 +165,24 @@ class Purchase(db.Model, TrackModifications):
 
     @property
     def invoice_ticket_price_no_vat(self):
-        return self.get_ticket_price() * (100 - self.vat_percentage)/100
+        return cents_to_euro(self.ticket_price * (100 - self.vat_percentage)/100)
 
     @property
     def invoice_price_no_vat(self):
-        return self.get_price() * (100 - self.vat_percentage)/100
+        return cents_to_euro(self.price * (100 - self.vat_percentage)/100)
 
     @property
     def administration_costs_no_vat(self):
-        return self.get_administration_costs() * (100 - self.vat_percentage)/100
+        return cents_to_euro(self.administration_costs * (100 - self.vat_percentage)/100)
 
     @property
     def vat(self):
-        return self.get_price() - self.invoice_price_no_vat + \
-               self.get_administration_costs() - self.administration_costs_no_vat
+        return cents_to_euro(self.price) - self.invoice_price_no_vat + \
+               cents_to_euro(self.administration_costs) - self.administration_costs_no_vat
 
     # PromoterFinances
     def promoter_tickets(self):
-        return len(self.tickets)
+        return len(self.tickets) if self.status == STATUS_PAID else 0
 
     def promoter_price(self):
         if self.status == STATUS_PAID:
@@ -202,52 +190,27 @@ class Purchase(db.Model, TrackModifications):
                 self.promoter.minimum_promoter_commission,
                 config().minimum_promoter_commission
             ) * self.number_of_tickets
-            return max(self.get_price() * self.promoter_commission, minimum_promoter_commission) / 100
+            return cents_to_euro(max(self.price * self.promoter_commission / 100, minimum_promoter_commission))
         else:
             return 0
 
-    def num_refunded_tickets(self):
-        return len([t for t in self.tickets if t.refunded])
+    # Organizer
+    @property
+    def expenses_promoter_commissions(self):
+        return max([self.ticket_price * self.promoter_commission / 100, self.minimum_promoter_commission]) * \
+               self.number_of_tickets
 
-    def refunded_price(self):
-        return self.get_ticket_price() * self.num_refunded_tickets() * self.promoter_commission / 100
+    @property
+    def expenses_club_owner_commissions(self):
+        return max([self.price - self.refunded_amount, 0]) * self.club_owner_commission / 100
 
-    def promoter_finances(self):
-        return {
-            "tickets": self.num_tickets(),
-            "promoter_price": self.promoter_price(),
-            "refunded_price": self.refunded_price()
-        }
+    # Promoter
+    @property
+    def income_promoter_commissions(self):
+        return self.expenses_promoter_commissions
 
-    # ClubOwnerFinances
-    def club_owner_price(self):
-        if self.status == STATUS_PAID:
-            return max(self.get_price() * self.club_owner_commission, config().minimum_promoter_commission) / 100
-        else:
-            return 0
+    # Club Owner
+    @property
+    def income_club_owner_commissions(self):
+        return self.expenses_club_owner_commissions
 
-    def club_owner_refunded_price(self):
-        return self.get_ticket_price() * self.num_refunded_tickets() * self.promoter_commission / 100
-
-    def club_owner_finances(self):
-        return {
-            "tickets": self.num_tickets(),
-            "promoter_price": self.club_owner_price(),
-            "refunded_price": self.club_owner_refunded_price()
-        }
-
-    # PastParties
-    def get_price_with_refunds(self):
-        return self.get_price() - self.purchase_refund()
-
-    def purchase_refund(self):
-        return sum([r.get_price() for r in self.refunds])
-
-    def purchase_promoter_cut(self):
-        return self.get_price() * self.promoter_commission / 100
-
-    def purchase_club_owner_cut(self):
-        return self.get_price_with_refunds() * self.club_owner_commission / 100
-
-    def purchase_date(self):
-        return self.purchase_datetime.strftime("%d-%m-%Y %H:%M")

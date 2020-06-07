@@ -16,7 +16,7 @@ from sqlalchemy import func
 from constants.mollie import STATUS_PAID
 from models.party import Party
 from models.purchase import Purchase
-from utilities import datetime_browser
+from utilities import datetime_browser, cents_to_euro
 
 
 class Anonymous(AnonymousUserMixin):
@@ -245,34 +245,29 @@ class User(UserMixin, Anonymous, db.Model, TrackModifications):
     def commissions_json(self, purchases):
         data = {
             'id': self.user_id,
-            "first_name": self.first_name,
-            "last_name": self.last_name,
-            "name": self.full_name,
-            "email": self.email,
+            "full_name": self.full_name,
             "access": self.access,
-            "is_active": self.is_active,
-            "last_seen": datetime_browser(self.last_seen),
         }
         total = 0
         if self.is_promoter:
             purchases = [p for p in purchases if p.promoter == self and p.status == STATUS_PAID]
-            total = sum([p.promoter_price() for p in purchases])
+            total = sum([p.income_promoter_commissions for p in purchases])
             parties = Party.query.filter(Party.party_id.in_([p.party_id for p in purchases if p.promoter == self])) \
                 .order_by(Party.party_start_datetime).all()
             data.update({
-                "parties": [p.promoter_finances(self) for p in parties]
+                "parties": [p.promoter_commissions(self) for p in parties]
             })
         if self.is_club_owner:
             purchases = [p for p in purchases if p.party.club_owner == self and p.status == STATUS_PAID]
-            total = sum([p.club_owner_price() for p in purchases])
+            total = sum([p.income_club_owner_commissions for p in purchases])
             parties = Party.query.filter(Party.party_id.in_([p.party_id for p in purchases])) \
                 .order_by(Party.party_start_datetime).all()
             data.update({
                 "club": self.club,
-                "parties": [p.club_owner_finances() for p in parties],
+                "parties": [p.json() for p in parties],
             })
         data.update({
-            "total": total,
+            "total": cents_to_euro(total),
         })
         return data
 
@@ -286,7 +281,7 @@ class User(UserMixin, Anonymous, db.Model, TrackModifications):
         parties = Party.query.filter(Party.party_id.in_([p.party_id for p in purchases if p.promoter == self])) \
             .order_by(Party.party_start_datetime).all()
         data = {
-            "parties": [p.promoter_finances(self) for p in parties],
+            "parties": [p.promoter_commissions(self) for p in parties],
             "total": total,
         }
         return data

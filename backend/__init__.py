@@ -6,6 +6,7 @@ from datetime import datetime
 from ext import db, migrate, login, mail, cors
 import commands
 import os
+from utilities import cents_to_euro
 
 
 def create_app(config_class=Config):
@@ -24,10 +25,15 @@ def create_app(config_class=Config):
             current_user.last_seen = datetime.utcnow()
             db.session.commit()
 
-    # Template filter for converting prices to euro
+    # Template filters
+    # Converting prices to euro
     @app.template_filter("euro_format")
     def euro_format(p):
         return "€{:,.2f}".format(p)
+    # Converting prices to euro
+    @app.template_filter("cents_to_euro")
+    def euro_cents_to_euro(c):
+        return cents_to_euro(c)
 
     # Create static folders (if not available)
     make_static_folders(app)

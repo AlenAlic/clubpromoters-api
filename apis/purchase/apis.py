@@ -5,6 +5,7 @@ from models import get_code_from_request, code_required
 from flask import url_for, request, current_app, Response
 from mollie.api.client import Client
 from models.configuration import config
+from utilities import euro_to_cents
 
 
 api = Namespace("purchase", description="Purchase")
@@ -41,9 +42,9 @@ class PurchaseAPIOrder(Resource):
                 purchase.code = get_code_from_request(request)
                 purchase.promoter = purchase.code.user
                 purchase.set_commissions()
-                purchase.set_ticket_price(api.payload["ticket_price"])
-                purchase.set_administration_costs(api.payload["administration_costs"])
-                purchase.set_price(party.get_ticket_price() * tickets)
+                purchase.ticket_price = euro_to_cents(api.payload["ticket_price"])
+                purchase.administration_costs = euro_to_cents(api.payload["administration_costs"])
+                purchase.price = party.ticket_price * tickets
                 purchase.vat_percentage = conf.vat
                 purchase.minimum_promoter_commission = purchase.code.user.minimum_promoter_commission
                 for i in range(tickets):

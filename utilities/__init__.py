@@ -6,7 +6,6 @@ from string import ascii_letters
 import os
 from werkzeug.utils import secure_filename
 from models.file import File
-from models.configuration import config
 from ext import db
 from time import time
 from constants import UPLOAD_FOLDER
@@ -18,6 +17,14 @@ def datetime_python(s):
 
 def datetime_browser(dt):
     return dt.strftime(DATETIME_FORMAT)
+
+
+def cents_to_euro(cents):
+    return float(cents)/100
+
+
+def euro_to_cents(euro):
+    return int(euro * 100)
 
 
 def activation_code():
@@ -49,6 +56,7 @@ def file_extension(filename):
 
 
 def allowed_file(filename):
+    from models.configuration import config
     return '.' in filename and file_extension(filename) in config().allowed_file_types()
 
 

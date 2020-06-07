@@ -16,7 +16,8 @@ class Ticket(db.Model, TrackModifications):
     def __repr__(self):
         return f"{self.ticket_id}"
 
-    def available(self):
+    @property
+    def is_available(self):
         return not self.used and not self.denied_entry
 
     def json(self):
@@ -24,7 +25,7 @@ class Ticket(db.Model, TrackModifications):
             "id": self.ticket_id,
             "used": self.used,
             "denied_entry": self.denied_entry,
-            "available": self.available(),
+            "is_available": self.is_available,
             "number": self.number,
             "refunded": self.refunded,
         }

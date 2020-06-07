@@ -55,7 +55,7 @@ class HostessAPIEntranceCode(Resource):
         purchase = Purchase.query.filter(Purchase.hash == api.payload["entrance_code"]).first()
         if not purchase:
             return abort(404)
-        available_tickets = [t for t in purchase.tickets if t.available()]
+        available_tickets = [t for t in purchase.tickets if t.is_available]
         if len(available_tickets) > 0:
             return purchase.json()
         return abort(400)
@@ -65,7 +65,7 @@ class HostessAPIEntranceCode(Resource):
 class HostessAPIAccept(Resource):
 
     @api.expect(api.model("Accept", {
-        "purchase_id": fields.String(required=True),
+        "purchase_id": fields.Integer(required=True),
         "tickets": fields.Integer(required=True),
     }), validate=True)
     @api.response(200, "Purchase")
@@ -76,7 +76,7 @@ class HostessAPIAccept(Resource):
         """Accept a number of tickets"""
         purchase = Purchase.query.filter(Purchase.purchase_id == api.payload["purchase_id"]).first()
         tickets = api.payload["tickets"]
-        available_tickets = [t for t in purchase.tickets if t.available()]
+        available_tickets = [t for t in purchase.tickets if t.is_available]
         if len(available_tickets) >= tickets:
             for i in range(tickets):
                 available_tickets[i].used = True
@@ -89,7 +89,7 @@ class HostessAPIAccept(Resource):
 class HostessAPIDeny(Resource):
 
     @api.expect(api.model("Deny", {
-        "purchase_id": fields.String(required=True),
+        "purchase_id": fields.Integer(required=True),
         "tickets": fields.Integer(required=True),
     }), validate=True)
     @api.response(200, "Purchase")
@@ -100,7 +100,7 @@ class HostessAPIDeny(Resource):
         """Deny a number of tickets"""
         purchase = Purchase.query.filter(Purchase.purchase_id == api.payload["purchase_id"]).first()
         tickets = api.payload["tickets"]
-        available_tickets = [t for t in purchase.tickets if t.available()]
+        available_tickets = [t for t in purchase.tickets if t.is_available]
         if len(available_tickets) >= tickets:
             for i in range(tickets):
                 available_tickets[i].denied_entry = True

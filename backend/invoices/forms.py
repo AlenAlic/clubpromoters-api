@@ -6,6 +6,7 @@ from wtforms.ext.sqlalchemy.fields import QuerySelectField
 from models import Purchase
 from constants import GET
 from models.configuration import config
+from utilities import euro_to_cents, cents_to_euro
 
 
 class TestInvoiceForm(FlaskForm):
@@ -24,7 +25,7 @@ class InvoiceSettingsForm(FlaskForm):
         super().__init__(**kwargs)
         if request.method == GET:
             conf = config()
-            self.administration_costs.data = conf.get_administration_costs()
+            self.administration_costs.data = cents_to_euro(conf.administration_costs)
             self.vat.data = conf.vat
             self.invoice_title.data = conf.invoice_title
             self.invoice_address.data = conf.invoice_address
@@ -41,7 +42,7 @@ class InvoiceSettingsForm(FlaskForm):
 
     def save(self):
         conf = config()
-        conf.set_administration_costs(self.administration_costs.data)
+        conf.administration_costs = euro_to_cents(self.administration_costs.data)
         conf.vat = self.vat.data
         conf.invoice_title = self.invoice_title.data
         conf.invoice_address = self.invoice_address.data

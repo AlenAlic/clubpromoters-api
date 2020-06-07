@@ -22,6 +22,7 @@ class Code(db.Model, TrackModifications):
         self.active = False
         self.user_id = None
 
+    @property
     def qr_code(self):
         url = pyqrcode.create(f"{current_app.config.get('BASE_URL')}?code={self.code}")
         return url.png_as_base64_str(scale=10)
@@ -34,7 +35,7 @@ class Code(db.Model, TrackModifications):
         }
         if current_user.is_promoter:
             data.update({
-                "qr_code": self.qr_code(),
+                "qr_code": self.qr_code,
             })
         if self.user_id is not None:
             data["promoter"] = {

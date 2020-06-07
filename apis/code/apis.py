@@ -15,5 +15,5 @@ class MollieAPIWebhook(Resource):
         """Get .png base64 encoded image"""
         code = Code.query.filter(Code.code_id == code_id).first()
         if code:
-            return code.qr_code()
+            return code.qr_code
         return abort(404)

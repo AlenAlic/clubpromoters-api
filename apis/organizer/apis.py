@@ -1,5 +1,4 @@
 from flask_restx import Namespace, Resource, abort, fields
-from flask_login import current_user
 from ext import db
 from models import login_required, requires_access_level, ACCESS_ORGANIZER, ACCESS_CLUB_OWNER, ACCESS_HOSTESS, \
     ACCESS_PROMOTER
@@ -13,9 +12,8 @@ from utilities import activation_code, datetime_python
 from sqlalchemy import or_
 import random
 from mollie.api.client import Client
-from utilities import last_month_datetime, upload_file
+from utilities import last_month_datetime
 from sqlalchemy import func
-from flask import request
 from utilities import euro_to_cents
 
 

@@ -1,3 +1,4 @@
+from flask import current_app
 from ext import db
 from models.tables import TABLE_FILE, TABLE_USERS
 from models import TrackModifications
@@ -27,9 +28,10 @@ class File(db.Model, TrackModifications):
 
     @property
     def url(self):
+        scheme = "http" if "127.0.0.1" in request.host or "localhost" in request.host else "https"
         relative_url = "{static}{file}"\
             .format(static=current_app.static_url_path, file=self.path.split("static")[1].replace("\\", "/"))
-        url = f"{request.scheme}://{request.host}{relative_url}"
+        url = f"{scheme}://{request.host}{relative_url}"
         return urllib.parse.quote(url, safe="/:")
 
     def json(self):

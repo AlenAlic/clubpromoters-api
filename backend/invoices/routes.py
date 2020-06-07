@@ -20,7 +20,7 @@ def index():
             p = invoice_form.purchase.data
             p.generate_invoice()
             db.session.commit()
-            directory = os.path.join(current_app.static_folder, UPLOAD_FOLDER)
+            directory = os.path.join(current_app.static_folder, INVOICES_FOLDER)
             return send_from_directory(directory=directory, filename=p.invoice_file_name, mimetype="application/pdf",
                                        as_attachment=True, cache_timeout=0)
         if settings_form.save_changes.name in request.form and settings_form.validate_on_submit():

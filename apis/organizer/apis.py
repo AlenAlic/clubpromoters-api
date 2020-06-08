@@ -95,6 +95,40 @@ class OrganizerAPICreateLocation(Resource):
         return
 
 
+@api.route("/update_location/<int:location_id>")
+class OrganizerAPICreateLocation(Resource):
+
+    @api.expect(api.model("NewLocation", {
+        "name": fields.String(required=True),
+        "street": fields.String(required=True),
+        "street_number": fields.Integer(required=True),
+        "street_number_addition": fields.String(required=True),
+        "postal_code": fields.Integer(required=True),
+        "postal_code_letters": fields.String(required=True),
+        "city": fields.String(required=True),
+        "maps_url": fields.String(),
+    }), validate=True)
+    @api.response(200, "Location updated")
+    @api.response(200, "Location not found")
+    @login_required
+    @requires_access_level(ACCESS_ORGANIZER)
+    def patch(self, location_id):
+        """Update existing Location"""
+        location = Location.query.filter(Location.location_id == location_id).first()
+        if location:
+            location.name = api.payload["name"]
+            location.street = api.payload["street"]
+            location.street_number = api.payload["street_number"]
+            location.street_number_addition = api.payload["street_number_addition"]
+            location.postal_code = api.payload["postal_code"]
+            location.postal_code_letters = api.payload["postal_code_letters"].upper()
+            location.city = api.payload["city"]
+            location.maps_url = api.payload["maps_url"]
+            db.session.commit()
+            return
+        return abort(404)
+
+
 @api.route("/create_new_hostess")
 class OrganizerAPICreateHostess(Resource):
 

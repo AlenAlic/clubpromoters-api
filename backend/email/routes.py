@@ -2,8 +2,9 @@ from flask import render_template, redirect, url_for, flash
 from backend.email import bp
 from constants import GET
 from mailing.util import filtered_form
-from models import User, Purchase
+from models import User, Purchase, Ticket, Party
 from utilities import activation_code
+from datetime import datetime, timedelta
 
 
 GROUP_ERROR = "error"
@@ -83,7 +84,31 @@ def template(group, name):
             return render_template(path)
     if group == GROUP_PURCHASE:
         if name == NAME_PURCHASE:
-            p = Purchase.query.first()
-            return render_template(path, purchase=p)
+            purchase = Purchase.query.first()
+            if not purchase:
+                start_time = datetime.utcnow().replace(hour=22, minute=30)
+                party = Party()
+                party.party_id = 42
+                party.name = "Amazing party"
+                party.party_start_datetime = start_time
+                party.party_end_datetime = start_time + timedelta(hours=5)
+                tickets = 3
+                purchase = Purchase()
+                purchase.party = party
+                purchase.party_id = party.party_id
+                purchase.purchase_id = 10
+                purchase.ticket_price = 2500
+                purchase.price = purchase.ticket_price * tickets
+                purchase.first_name = "Charlie"
+                purchase.last_name = "Brown"
+                purchase.email = "c.brown@example.com"
+                purchase.mollie_payment_id = "tr_mollieID123"
+                purchase.purchase_datetime = datetime.utcnow()
+                purchase.hash = purchase.set_hash()
+                for i in range(tickets):
+                    ticket = Ticket()
+                    ticket.number = i + 1
+                    purchase.tickets.append(ticket)
+            return render_template(path, purchase=purchase)
     flash("Dit not find e-mail template.")
     return redirect(url_for("email.index"))

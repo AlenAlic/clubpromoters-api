@@ -1,4 +1,3 @@
-from flask import current_app
 from ext import db
 from models.tables import TABLE_FILE, TABLE_USERS
 from models import TrackModifications

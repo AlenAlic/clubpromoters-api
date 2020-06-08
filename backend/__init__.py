@@ -70,8 +70,8 @@ def register_blueprints(app):
     from backend.email import bp as email_bp
     app.register_blueprint(email_bp, url_prefix="/email")
 
-    from backend.invoices import bp as invoices_bp
-    app.register_blueprint(invoices_bp, url_prefix="/invoices")
+    from backend.receipts import bp as receipts_bp
+    app.register_blueprint(receipts_bp, url_prefix="/receipts")
 
     from backend.settings import bp as settings_bp
     app.register_blueprint(settings_bp, url_prefix="/settings")
@@ -85,7 +85,11 @@ def register_blueprints(app):
 
 
 def make_static_folders(app):
-    # Invoices
-    directory = os.path.join(app.static_folder, INVOICES_FOLDER)
+    # Uploads
+    directory = os.path.join(app.static_folder, UPLOAD_FOLDER)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    # Receipts
+    directory = os.path.join(app.static_folder, RECEIPTS_FOLDER)
     if not os.path.exists(directory):
         os.makedirs(directory)

@@ -34,7 +34,7 @@ class MollieAPIWebhook(Resource):
                     # At this point you'd probably want to start the process of delivering the product to the customer.
                     purchase.purchase_paid()
                     db.session.commit()
-                    purchase.generate_invoice()
+                    purchase.generate_receipt()
                     db.session.commit()
                     send_purchased_tickets(purchase)
                     return STATUS_PAID

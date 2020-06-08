@@ -4,4 +4,4 @@ from .mollie import *
 
 
 UPLOAD_FOLDER = "uploads"
-INVOICES_FOLDER = "invoices"
+RECEIPTS_FOLDER = "receipts"

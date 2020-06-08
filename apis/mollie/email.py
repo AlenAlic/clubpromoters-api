@@ -7,5 +7,5 @@ def send_purchased_tickets(purchase):
                recipients=[purchase.email], bcc=[],
                text_body=render_template("email/purchase/purchased_tickets.txt", purchase=purchase),
                html_body=render_template("email/purchase/purchased_tickets.html", purchase=purchase),
-               attachments={"invoice.pdf": purchase.invoice_path}
+               attachments={"receipt.pdf": purchase.invoice_path}
                )

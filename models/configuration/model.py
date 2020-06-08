@@ -19,10 +19,10 @@ class Configuration(db.Model, TrackModifications):
     minimum_promoter_commission = db.Column(db.Integer, nullable=False, default=100)
     administration_costs = db.Column(db.Integer, nullable=False, default=0)
     vat = db.Column(db.Integer(), nullable=False, default=9)
-    invoice_title = db.Column(db.String(128))
-    invoice_address = db.Column(db.String(128))
-    invoice_country = db.Column(db.String(128))
-    invoice_phone = db.Column(db.String(128))
+    receipt_title = db.Column(db.String(128))
+    receipt_address = db.Column(db.String(128))
+    receipt_country = db.Column(db.String(128))
+    receipt_phone = db.Column(db.String(128))
 
     def allowed_file_types(self):
         return self.allowed_image_types.split(",")

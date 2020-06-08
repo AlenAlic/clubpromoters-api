@@ -5,7 +5,7 @@ from flask import current_app, render_template, request
 from flask_login import current_user
 from datetime import datetime
 from constants.mollie import STATUS_OPEN, STATUS_PENDING, STATUS_PAID, STATUS_CANCELED
-from constants import INVOICES_FOLDER
+from constants import RECEIPTS_FOLDER
 from utilities import datetime_browser, cents_to_euro
 from hashlib import sha3_256
 import pyqrcode
@@ -38,8 +38,8 @@ class Purchase(db.Model, TrackModifications):
     promoter_commission = db.Column(db.Integer, nullable=False, default=0)
     club_owner_commission = db.Column(db.Integer, nullable=False, default=0)
     administration_costs = db.Column(db.Integer, nullable=False, default=0)
-    vat_percentage = db.Column(db.Integer, nullable=False, default=21)
-    invoice_path = db.Column(db.String(512), nullable=True)
+    vat_percentage = db.Column(db.Integer, nullable=False, default=9)
+    receipt_path = db.Column(db.String(512), nullable=True)
     tickets_path = db.Column(db.String(512), nullable=True)
     minimum_promoter_commission = db.Column(db.Integer, nullable=False, default=0)
 
@@ -143,32 +143,32 @@ class Purchase(db.Model, TrackModifications):
         return sum([r.price for r in self.refunds])
 
     @property
-    def invoice_file_name(self):
-        return f"invoice.{self.purchase_id}.{self.invoice_number}.{self.invoice_reference}.pdf"
+    def receipt_file_name(self):
+        return f"receipt.{self.purchase_id}.{self.receipt_number}.{self.receipt_reference}.pdf"
 
-    def generate_invoice(self):
+    def generate_receipt(self):
         conf = config()
-        directory = os.path.join(current_app.static_folder, INVOICES_FOLDER)
-        path = os.path.join(directory, self.invoice_file_name)
-        HTML(string=render_template("invoices/invoice_template.html", purchase=self, conf=conf),
+        directory = os.path.join(current_app.static_folder, RECEIPTS_FOLDER)
+        path = os.path.join(directory, self.receipt_file_name)
+        HTML(string=render_template("receipts/receipt_template.html", purchase=self, conf=conf),
              base_url=request.base_url).write_pdf(path)
-        self.invoice_path = path
+        self.receipt_path = path
 
     @property
-    def invoice_number(self):
+    def receipt_number(self):
         n = f"{self.purchase_id}"
-        return f"{self.created_at.strftime('%Y%m%d')}{n.zfill(6)}"
+        return f"{self.purchase_datetime.strftime('%Y%m')}{n.zfill(6)}"
 
     @property
-    def invoice_reference(self):
+    def receipt_reference(self):
         return self.mollie_payment_id.replace("tr_", "")
 
     @property
-    def invoice_ticket_price_no_vat(self):
+    def receipt_ticket_price_no_vat(self):
         return cents_to_euro(self.ticket_price * (100 - self.vat_percentage)/100)
 
     @property
-    def invoice_price_no_vat(self):
+    def receipt_price_no_vat(self):
         return cents_to_euro(self.price * (100 - self.vat_percentage)/100)
 
     @property
@@ -177,7 +177,7 @@ class Purchase(db.Model, TrackModifications):
 
     @property
     def vat(self):
-        return cents_to_euro(self.price) - self.invoice_price_no_vat + \
+        return cents_to_euro(self.price) - self.receipt_price_no_vat + \
                cents_to_euro(self.administration_costs) - self.administration_costs_no_vat
 
     # PromoterFinances

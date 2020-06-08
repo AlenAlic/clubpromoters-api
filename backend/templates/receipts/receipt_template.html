@@ -1,42 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
-    {% include "invoices/invoice_template_head.html" %}
+    {% include "receipts/receipt_template_head.html" %}
     <body>
-    <img style="float: left; width: 255px; height: 121px;" src="{{url_for('static', filename='invoice_logo.svg')}}" alt="logo" />
-        <div class="invoice-header">
-            <h2>Invoice</h2>
+    <img style="float: left; width: 255px; height: 121px;" src="{{url_for('static', filename='receipt_logo.svg')}}" alt="logo" />
+        <div class="receipt-header">
+            <h2>Receipt</h2>
             <h3>{{ purchase.created_at.strftime("%Y-%m-%d") }}</h3>
-            <h4>{{ purchase.invoice_number }}</h4>
-            <h5>{{ purchase.invoice_reference }}</h5>
+            <h4>{{ purchase.receipt_number }}</h4>
+            <h5>{{ purchase.receipt_reference }}</h5>
         </div>
-        <div class="invoice-address">
-            <div>{{ conf.invoice_title }}</div>
-            <div>{{ conf.invoice_address }}</div>
-            <div>{{ conf.invoice_country }}</div>
-            <div>{{ conf.invoice_phone }}</div>
+        <div class="receipt-address">
+            <div>{{ conf.receipt_title }}</div>
+            <div>{{ conf.receipt_address }}</div>
+            <div>{{ conf.receipt_country }}</div>
+            <div>{{ conf.receipt_phone }}</div>
         </div>
-        <div class="invoice-customer">
+        <div class="receipt-customer">
             <div>{{ purchase.full_name }}</div>
             <div>{{ purchase.email }}</div>
         </div>
         <div>
-            <table class="invoice-table invoice-overview">
+            <table class="receipt-table receipt-overview">
                 <thead>
                 <tr>
-                    <th>Invoice number</th>
-                    <th>Invoice date</th>
+                    <th>Receipt number</th>
+                    <th>Purchase date</th>
                     <th>Payment reference</th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr>
-                    <td>{{ purchase.invoice_number }}</td>
+                    <td>{{ purchase.receipt_number }}</td>
                     <td>{{ purchase.created_at.strftime("%Y-%m-%d") }}</td>
-                    <td>{{ purchase.invoice_reference }}</td>
+                    <td>{{ purchase.receipt_reference }}</td>
                 </tr>
                 </tbody>
             </table>
-            <table class="invoice-table invoice-products">
+            <table class="receipt-table receipt-products">
                 <thead>
                 <tr>
                     <th>Product</th>
@@ -48,20 +48,20 @@
                 </thead>
                 <tbody>
                 <tr>
-                    <td>Tickets for {{ purchase.party.name }}</td>
+                    <td>Ticket for {{ purchase.party.name }}</td>
                     <td>{{ conf.vat }}%</td>
-                    <td>{{ purchase.invoice_ticket_price_no_vat | euro_format }}</td>
+                    <td>{{ purchase.receipt_ticket_price_no_vat | euro_format }}</td>
                     <td>{{ purchase.number_of_tickets }}</td>
-                    <td>{{ purchase.invoice_price_no_vat | euro_format }}</td>
+                    <td>{{ purchase.receipt_price_no_vat | euro_format }}</td>
                 </tr>
                 </tbody>
             </table>
-            <table class="invoice-table invoice-summary">
+            <table class="receipt-table receipt-summary">
                 <tbody>
                 <tr>
                     <th></th>
                     <th>Total products</th>
-                    <td>{{ purchase.invoice_price_no_vat | euro_format }}</td>
+                    <td>{{ purchase.receipt_price_no_vat | euro_format }}</td>
                 </tr>
                 <tr>
                     <th></th>
@@ -71,17 +71,17 @@
                 <tr>
                     <th></th>
                     <th>Total (ex. VAT)</th>
-                    <td>{{ (purchase.administration_costs_no_vat + purchase.invoice_price_no_vat) | euro_format }}</td>
+                    <td>{{ (purchase.administration_costs_no_vat + purchase.receipt_price_no_vat) | euro_format }}</td>
                 </tr>
                 <tr>
                     <th></th>
                     <th>Total VAT</th>
                     <td>{{ purchase.vat | euro_format }}</td>
                 </tr>
-                <tr class="invoice-total">
+                <tr class="receipt-total">
                     <th></th>
-                    <th style="text-align: right;" class="invoice-total__border">Total</th>
-                    <th class="invoice-total__border">{{ (purchase.price + purchase.administration_costs)| cents_to_euro | euro_format }}</th>
+                    <th style="text-align: right;" class="receipt-total__border">Total</th>
+                    <th class="receipt-total__border">{{ (purchase.price + purchase.administration_costs)| cents_to_euro | euro_format }}</th>
                 </tr>
                 </tbody>
             </table>

@@ -101,6 +101,16 @@ class User(UserMixin, Anonymous, db.Model, TrackModifications):
     minimum_promoter_commission = db.Column(db.Integer, nullable=False, default=100)
     iban = db.Column(db.String(30), nullable=True)
     iban_verified = db.Column(db.Boolean, nullable=False, default=False)
+    business_entity = db.Column(db.Boolean, nullable=False, default=False)
+    invoice_legal_name = db.Column(db.String(128))
+    street = db.Column(db.String(256), nullable=False)
+    street_number = db.Column(db.String(12), nullable=False)
+    street_number_addition = db.Column(db.String(12), default="")
+    postal_code = db.Column(db.Integer(), nullable=False)
+    postal_code_letters = db.Column(db.String(2), nullable=False)
+    city = db.Column(db.String(256), nullable=False)
+    invoice_kvk_number = db.Column(db.String(128))
+    invoice_vat_number = db.Column(db.String(128))
 
     def __repr__(self):
         return f'{self.email}'

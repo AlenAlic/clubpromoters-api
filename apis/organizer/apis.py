@@ -54,6 +54,7 @@ class OrganizerAPICreateClubOwner(Resource):
         account.last_name = api.payload["last_name"]
         account.auth_code = activation_code()
         account.access = ACCESS_CLUB_OWNER
+        account.business_entity = True
         db.session.add(account)
         db.session.commit()
         send_activation_email(account)

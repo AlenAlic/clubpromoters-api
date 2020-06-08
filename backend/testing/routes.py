@@ -33,10 +33,11 @@ def index():
                     count = User.query.filter(User.access == ACCESS_CLUB_OWNER).count() + 1
                     for i in range(count, count + test_accounts_form.number.data):
                         club_owner = User()
-                        club_owner.club = f"Club {CLUB_OWNER}{i}"
+                        club_owner.club = f"Club {i}"
                         club_owner.username = f"{CLUB_OWNER}{i}"
                         club_owner.email = f"{CLUB_OWNER}{i}@test.com"
                         club_owner.access = ACCESS_CLUB_OWNER
+                        club_owner.business_entity = True
                         club_owner.is_active = True
                         club_owner.set_password("test")
                         club_owner.commission = conf.default_club_owner_commission

@@ -17,6 +17,13 @@ profile = api.model("ProfileResponse", {
     "first_name": fields.String,
     "last_name": fields.String,
     "full_name": fields.String,
+    "street": fields.String,
+    "street_number": fields.Integer,
+    "street_number_addition": fields.String,
+    "postal_code": fields.Integer,
+    "postal_code_letters": fields.String,
+    "city": fields.String,
+    "phone_number": fields.String,
 })
 
 
@@ -32,6 +39,7 @@ class UserAPIProfile(Resource):
     @api.expect(api.model("Profile", {
         "first_name": fields.String(required=True),
         "last_name": fields.String(required=True),
+        "phone_number": fields.String(),
     }), validate=True)
     @api.response(200, "Profile", profile)
     @login_required
@@ -39,6 +47,7 @@ class UserAPIProfile(Resource):
         """Update user profile"""
         current_user.first_name = api.payload["first_name"]
         current_user.last_name = api.payload["last_name"]
+        current_user.phone_number = api.payload["phone_number"]
         db.session.commit()
         return current_user.profile
 

@@ -109,6 +109,7 @@ class User(UserMixin, Anonymous, db.Model, TrackModifications):
     postal_code = db.Column(db.Integer(), nullable=False)
     postal_code_letters = db.Column(db.String(2), nullable=False)
     city = db.Column(db.String(256), nullable=False)
+    phone_number = db.Column(db.String(256), nullable=False)
     invoice_kvk_number = db.Column(db.String(128))
     invoice_vat_number = db.Column(db.String(128))
 
@@ -180,6 +181,7 @@ class User(UserMixin, Anonymous, db.Model, TrackModifications):
             "first_name": self.first_name,
             "last_name": self.last_name,
             "full_name": self.full_name,
+            "business_entity": self.business_entity,
             "iat": time(),
             "exp": time() + expires_in,
         }, current_app.config["SECRET_KEY"], algorithm="HS256").decode("utf-8")
@@ -192,18 +194,32 @@ class User(UserMixin, Anonymous, db.Model, TrackModifications):
             "first_name": self.first_name,
             "last_name": self.last_name,
             "full_name": self.full_name,
+            "phone_number": self.phone_number,
+            "street": self.street,
+            "street_number": self.street_number,
+            "street_number_addition": self.street_number_addition,
+            "postal_code": self.postal_code,
+            "postal_code_letters": self.postal_code_letters,
+            "city": self.city,
         }
         if self.is_club_owner:
             data.update({
                 "club": self.club,
                 "commission": self.commission,
                 "iban": self.iban,
+                "invoice_legal_name": self.invoice_legal_name,
+                "invoice_kvk_number": self.invoice_kvk_number,
+                "invoice_vat_number": self.invoice_vat_number,
             })
         if self.is_promoter:
             data.update({
                 "code": self.code.json() if self.code else None,
                 "commission": self.commission,
                 "iban": self.iban,
+                "business_entity": self.business_entity,
+                "invoice_legal_name": self.invoice_legal_name,
+                "invoice_kvk_number": self.invoice_kvk_number,
+                "invoice_vat_number": self.invoice_vat_number,
             })
         return data
 
@@ -224,6 +240,13 @@ class User(UserMixin, Anonymous, db.Model, TrackModifications):
             "access": self.access,
             "is_active": self.is_active,
             "last_seen": datetime_browser(self.last_seen),
+            "phone_number": self.phone_number,
+            "street": self.street,
+            "street_number": self.street_number,
+            "street_number_addition": self.street_number_addition,
+            "postal_code": self.postal_code,
+            "postal_code_letters": self.postal_code_letters,
+            "city": self.city,
         }
         if self.is_club_owner:
             data.update({
@@ -237,10 +260,20 @@ class User(UserMixin, Anonymous, db.Model, TrackModifications):
                 } for h in self.hostesses],
                 "commission": self.commission,
                 "club": self.club,
+                "iban": self.iban,
+                "business_entity": self.business_entity,
+                "invoice_legal_name": self.invoice_legal_name,
+                "invoice_kvk_number": self.invoice_kvk_number,
+                "invoice_vat_number": self.invoice_vat_number,
             })
         if self.is_promoter:
             data.update({
                 "commission": self.commission,
+                "iban": self.iban,
+                "business_entity": self.business_entity,
+                "invoice_legal_name": self.invoice_legal_name,
+                "invoice_kvk_number": self.invoice_kvk_number,
+                "invoice_vat_number": self.invoice_vat_number,
             })
             if self.code is not None:
                 data.update({
@@ -282,12 +315,12 @@ class User(UserMixin, Anonymous, db.Model, TrackModifications):
         return data
 
     def promoter_income(self, month):
-        purchases = Purchase.query.filter(Purchase.purchase_datetime < datetime.now(),
+        purchases = Purchase.query.filter(Purchase.purchase_datetime < datetime.utcnow(),
                                           func.month(Purchase.purchase_datetime) == func.month(month),
                                           func.year(Purchase.purchase_datetime) == func.year(month),
                                           Purchase.promoter_id == self.user_id,
                                           Purchase.status == STATUS_PAID).all()
-        total = sum([p.promoter_price() for p in purchases])
+        total = sum([p.expenses_promoter_commissions for p in purchases])
         parties = Party.query.filter(Party.party_id.in_([p.party_id for p in purchases if p.promoter == self])) \
             .order_by(Party.party_start_datetime).all()
         data = {

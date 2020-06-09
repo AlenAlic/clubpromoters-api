@@ -52,6 +52,31 @@ class UserAPIProfile(Resource):
         return current_user.profile
 
 
+@api.route("/address")
+class UserAPIAddress(Resource):
+
+    @api.expect(api.model("Address", {
+        "street": fields.String(required=True),
+        "street_number": fields.Integer(required=True),
+        "street_number_addition": fields.String(required=True),
+        "postal_code": fields.Integer(required=True),
+        "postal_code_letters": fields.String(required=True),
+        "city": fields.String(required=True),
+    }), validate=True)
+    @api.response(200, "Profile", profile)
+    @login_required
+    def patch(self):
+        """Update user address"""
+        current_user.street = api.payload["street"]
+        current_user.street_number = api.payload["street_number"]
+        current_user.street_number_addition = api.payload["street_number_addition"]
+        current_user.postal_code = api.payload["postal_code"]
+        current_user.postal_code_letters = api.payload["postal_code_letters"]
+        current_user.city = api.payload["city"]
+        db.session.commit()
+        return current_user.profile
+
+
 @api.route("/assets/<int:user_id>")
 class UserAPIAssets(Resource):
 

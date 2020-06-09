@@ -1,6 +1,6 @@
 from flask_restx import Namespace, Resource, abort, fields
 from models import Party, Code
-from datetime import datetime
+from datetime import datetime, timedelta
 from models.configuration import config
 
 
@@ -15,7 +15,7 @@ class PublicAPIParty(Resource):
     @api.response(404, "Party not found")
     def get(self, party_id):
         """Get party"""
-        p = Party.query.filter(Party.is_active.is_(True), Party.party_end_datetime > datetime.utcnow(),
+        p = Party.query.filter(Party.is_active.is_(True), Party.party_start_datetime > datetime.utcnow(),
                                Party.party_id == party_id).first()
         if p:
             return {
@@ -32,8 +32,10 @@ class PublicAPIActiveParties(Resource):
     @api.response(200, "Active parties")
     def get(self):
         """Get active parties"""
-        parties = Party.query.filter(Party.is_active.is_(True), Party.party_end_datetime > datetime.utcnow()) \
+        parties = Party.query.filter(Party.is_active.is_(True),
+                                     Party.party_start_datetime > datetime.utcnow()) \
             .order_by(Party.party_start_datetime).all()
+        parties = [p for p in parties if p.party_start_datetime - timedelta(hours=1) > datetime.utcnow()]
         return [p.json() for p in parties]
 
 
@@ -44,8 +46,10 @@ class PublicAPIHomepageParties(Resource):
     @api.response(200, "Homepage parties")
     def get(self):
         """Get homepage parties (all parties of the next available day)"""
-        parties = Party.query.filter(Party.is_active.is_(True), Party.party_end_datetime > datetime.utcnow()) \
+        parties = Party.query.filter(Party.is_active.is_(True),
+                                     Party.party_start_datetime > datetime.utcnow()) \
             .order_by(Party.party_start_datetime, Party.party_id).all()
+        parties = [p for p in parties if p.party_start_datetime - timedelta(hours=1) > datetime.utcnow()]
         if len(parties) == 0:
             return []
         min_date = min([p.party_start_datetime for p in parties])

@@ -115,7 +115,7 @@ class Party(db.Model, TrackModifications):
             "start_date": datetime_browser(self.party_start_datetime),
             "end_date": datetime_browser(self.party_end_datetime),
             "tickets": sum([p.promoter_tickets() for p in self.purchases if p.promoter == user]),
-            "commission": sum([p.promoter_price() for p in self.purchases if p.promoter == user]),
+            "commission": sum([p.expenses_promoter_commissions for p in self.purchases if p.promoter == user]),
         }
         return data
 

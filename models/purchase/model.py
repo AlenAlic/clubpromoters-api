@@ -135,10 +135,6 @@ class Purchase(db.Model, TrackModifications):
         return data
 
     @property
-    def tickets_available_for_refund(self):
-        return min([self.number_of_tickets, (self.price - self.refunded_amount) / self.ticket_price])
-
-    @property
     def refunded_amount(self):
         return sum([r.price for r in self.refunds])
 
@@ -184,25 +180,20 @@ class Purchase(db.Model, TrackModifications):
     def promoter_tickets(self):
         return len(self.tickets) if self.status == STATUS_PAID else 0
 
-    def promoter_price(self):
-        if self.status == STATUS_PAID:
-            minimum_promoter_commission = max(
-                self.promoter.minimum_promoter_commission,
-                config().minimum_promoter_commission
-            ) * self.number_of_tickets
-            return cents_to_euro(max(self.price * self.promoter_commission / 100, minimum_promoter_commission))
-        else:
-            return 0
-
     # Organizer
     @property
     def expenses_promoter_commissions(self):
-        return max([self.ticket_price * self.promoter_commission / 100, self.minimum_promoter_commission]) * \
-               self.number_of_tickets
+        if self.status == STATUS_PAID:
+            return int(round(max([
+                self.ticket_price * self.promoter_commission / 100, self.minimum_promoter_commission
+            ]) * self.number_of_tickets))
+        return 0
 
     @property
     def expenses_club_owner_commissions(self):
-        return max([self.price - self.refunded_amount, 0]) * self.club_owner_commission / 100
+        if self.status == STATUS_PAID:
+            return int(round((self.price - self.refunded_amount) * self.club_owner_commission / 100))
+        return 0
 
     # Promoter
     @property

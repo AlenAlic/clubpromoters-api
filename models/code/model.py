@@ -23,9 +23,13 @@ class Code(db.Model, TrackModifications):
         self.user_id = None
 
     @property
+    def qr_url(self):
+        return f"{current_app.config.get('BASE_URL')}?code={self.code}"
+
+    @property
     def qr_code(self):
-        url = pyqrcode.create(f"{current_app.config.get('BASE_URL')}?code={self.code}")
-        return url.png_as_base64_str(scale=10)
+        img = pyqrcode.create(self.qr_url)
+        return img.png_as_base64_str(scale=10)
 
     def json(self):
         data = {

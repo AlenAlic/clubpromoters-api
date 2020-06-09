@@ -1,4 +1,5 @@
 from flask_restx import Namespace, Resource, abort, fields
+from flask import send_file
 from ext import db
 from models import login_required, requires_access_level, ACCESS_ORGANIZER, ACCESS_CLUB_OWNER, ACCESS_HOSTESS, \
     ACCESS_PROMOTER
@@ -15,6 +16,9 @@ from mollie.api.client import Client
 from utilities import last_month_datetime
 from sqlalchemy import func
 from utilities import euro_to_cents, cents_to_euro
+import xlsxwriter
+from io import BytesIO
+import pyqrcode
 
 
 api = Namespace("organizer", description="Organizer")
@@ -370,6 +374,36 @@ class OrganizerAPICodes(Resource):
             db.session.add(c)
         db.session.commit()
         return
+
+
+@api.route("/codes/excel")
+class OrganizerAPICodesExcel(Resource):
+
+    @api.expect(api.model("CodeList", {
+        "codes": fields.List(fields.Integer(required=True)),
+    }), validate=True)
+    @api.response(200, "Excel file containing codes")
+    @login_required
+    @requires_access_level(ACCESS_ORGANIZER)
+    def post(self):
+        """Excel file containing codes"""
+        output = BytesIO()
+        wb = xlsxwriter.Workbook(output, {'in_memory': True})
+        ws = wb.add_worksheet()
+        codes = Code.query.filter(Code.code_id.in_(api.payload["codes"])).order_by(Code.code).all()
+        for idx, code in enumerate(codes):
+            ws.write(idx, 0, code.code)
+            ws.write(idx, 1, code.qr_url)
+            buffer = BytesIO()
+            img = pyqrcode.create(code.qr_url)
+            img.png(buffer, scale=8)
+            ws.insert_image(idx, 2, f"{code.code}.png", {"image_data": buffer})
+            ws.set_column(0, 0, 20)
+            ws.set_column(1, 1, 50)
+        wb.close()
+        output.seek(0)
+        return send_file(output, as_attachment=True, cache_timeout=0,
+                         attachment_filename=f"codes_{datetime.utcnow().strftime('%d-%m-%Y_%H%M%S')}.xlsx")
 
 
 @api.route("/assign_code_to_promoter")

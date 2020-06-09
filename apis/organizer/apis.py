@@ -14,7 +14,7 @@ import random
 from mollie.api.client import Client
 from utilities import last_month_datetime
 from sqlalchemy import func
-from utilities import euro_to_cents
+from utilities import euro_to_cents, cents_to_euro
 
 
 api = Namespace("organizer", description="Organizer")
@@ -29,6 +29,89 @@ class OrganizerAPIConfig(Resource):
     def get(self):
         """Get config"""
         return config().json()
+
+
+@api.route("/dashboard/graph")
+class OrganizerAPIDashboardGraphs(Resource):
+
+    @api.response(200, "This year's financial data")
+    @login_required
+    @requires_access_level(ACCESS_ORGANIZER)
+    def get(self):
+        """Get this year's financial data"""
+        now = datetime.utcnow()
+        purchases = Purchase.query.filter(Purchase.purchase_datetime < datetime.utcnow(),
+                                          func.year(Purchase.purchase_datetime) == func.year(now)).all()
+        months = []
+        revenue = []
+        expenses = []
+        profit = []
+        for month in range(1, now.month + 1):
+            months.append(month)
+            month_purchases = [p for p in purchases if p.purchase_datetime.month == month]
+            month_revenue = sum([p.price + p.administration_costs for p in month_purchases])
+            month_expenses = sum([p.refunded_amount + p.expenses_promoter_commissions +
+                                  p.expenses_club_owner_commissions for p in month_purchases])
+            month_profit = month_revenue - month_expenses
+            revenue.append(month_revenue + revenue[-1] if len(revenue) else 0)
+            expenses.append(month_expenses + expenses[-1] if len(expenses) else 0)
+            profit.append(month_profit + profit[-1] if len(profit) else 0)
+        revenue = [cents_to_euro(r) for r in revenue]
+        expenses = [cents_to_euro(e) for e in expenses]
+        profit = [cents_to_euro(p) for p in profit]
+        return {
+            "months": months,
+            "revenue": revenue,
+            "expenses": expenses,
+            "profit": profit,
+        }
+
+
+@api.route("/dashboard/this_month")
+class OrganizerAPIDashboardThisMonth(Resource):
+
+    @api.response(200, "This month's financial data")
+    @login_required
+    @requires_access_level(ACCESS_ORGANIZER)
+    def get(self):
+        """Get this month's financial data"""
+        now = datetime.utcnow()
+        purchases = Purchase.query.filter(Purchase.purchase_datetime < datetime.utcnow(),
+                                          func.year(Purchase.purchase_datetime) == func.year(now),
+                                          func.month(Purchase.purchase_datetime) == func.month(now)).all()
+        revenue = sum([p.price + p.administration_costs for p in purchases])
+        expenses = sum([p.refunded_amount + p.expenses_promoter_commissions +
+                        p.expenses_club_owner_commissions for p in purchases])
+        profit = revenue - expenses
+        return {
+            "revenue": cents_to_euro(revenue),
+            "expenses": cents_to_euro(expenses),
+            "profit": cents_to_euro(profit),
+        }
+
+
+@api.route("/dashboard/last_month")
+class OrganizerAPIDashboardLastMonth(Resource):
+
+    @api.response(200, "Last month's financial data")
+    @login_required
+    @requires_access_level(ACCESS_ORGANIZER)
+    def get(self):
+        """Get last month's financial data"""
+        now = datetime.utcnow()
+        last_month = now.replace(month=now.month - 1 or 12)
+        purchases = Purchase.query.filter(Purchase.purchase_datetime < datetime.utcnow(),
+                                          func.year(Purchase.purchase_datetime) == func.year(now),
+                                          func.month(Purchase.purchase_datetime) == func.month(last_month)).all()
+        revenue = sum([p.price + p.administration_costs for p in purchases])
+        expenses = sum([p.refunded_amount + p.expenses_promoter_commissions +
+                        p.expenses_club_owner_commissions for p in purchases])
+        profit = revenue - expenses
+        return {
+            "revenue": cents_to_euro(revenue),
+            "expenses": cents_to_euro(expenses),
+            "profit": cents_to_euro(profit),
+        }
 
 
 @api.route("/create_new_club_owner")
@@ -519,7 +602,7 @@ class OrganizerAPIRefund(Resource):
             if payment.can_be_refunded() and 1.0 <= float(amount) <= float(payment.amount_remaining["value"]):
                 data = {
                     "amount": {"value": mollie_value, "currency": "EUR"},
-                    "description": f"test {datetime.now().strftime('%d-%m-%Y %H:%M:%S')}"
+                    "description": f"test {datetime.utcnow().strftime('%d-%m-%Y %H:%M:%S')}"
                 }
                 r = mollie_client.payment_refunds.with_parent_id(mollie_id).create(data)
                 ref.mollie_refund_id = r["id"]
@@ -544,7 +627,7 @@ class OrganizerAPICommissions(Resource):
     def get(self, year, month):
         """List of commissions for a given month for all users"""
         last_month = last_month_datetime(year, month)
-        purchase = Purchase.query.filter(Purchase.purchase_datetime < datetime.now(),
+        purchase = Purchase.query.filter(Purchase.purchase_datetime < datetime.utcnow(),
                                          func.month(Purchase.purchase_datetime) == func.month(last_month),
                                          func.year(Purchase.purchase_datetime) == func.year(last_month)).all()
         promoters = list(set([p.promoter_id for p in purchase if p.promoter_id is not None]))

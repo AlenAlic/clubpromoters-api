@@ -154,3 +154,7 @@ class Party(db.Model, TrackModifications):
     @property
     def income_club_owner_commission(self):
         return self.expenses_club_owner_commissions
+
+    @property
+    def income_number_tickets_sold(self):
+        return len([t for p in self.purchases for t in p.tickets if p.status == STATUS_PAID and not t.refunded])

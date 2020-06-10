@@ -7,9 +7,83 @@ from apis.auth.email import send_activation_email
 from utilities import activation_code
 from datetime import datetime
 from .functions import parties_list
+from utilities import cents_to_euro
+from sqlalchemy import func
 
 
 api = Namespace("club_owner", description="Club Owner")
+
+
+@api.route("/dashboard/graphs")
+class OrganizerAPIDashboardGraphs(Resource):
+
+    @api.response(200, "This year's financial data")
+    @login_required
+    @requires_access_level(ACCESS_CLUB_OWNER)
+    def get(self):
+        """Get this year's financial data"""
+        now = datetime.utcnow()
+        parties = Party.query.filter(Party.party_end_datetime < datetime.utcnow(),
+                                     func.year(Party.party_end_datetime) == func.year(now)).all()
+        months = []
+        tickets_sold = []
+        commission = []
+        for month in range(1, 13):
+            months.append(month)
+            month_parties = [p for p in parties if p.party_start_datetime.month == month]
+            month_tickets_sold = sum([p.income_number_tickets_sold for p in month_parties]
+                                     if len(month_parties) else [0])
+            month_commission = sum([p.income_club_owner_commission for p in month_parties]
+                                   if len(month_parties) else [0])
+            tickets_sold.append(month_tickets_sold)
+            commission.append(month_commission)
+        commission = [cents_to_euro(c) for c in commission]
+        return {
+            "months": months,
+            "tickets_sold": tickets_sold,
+            "commission": commission,
+        }
+
+
+@api.route("/dashboard/this_month")
+class OrganizerAPIDashboardThisMonth(Resource):
+
+    @api.response(200, "This month's financial data")
+    @login_required
+    @requires_access_level(ACCESS_CLUB_OWNER)
+    def get(self):
+        """Get this month's financial data"""
+        now = datetime.utcnow()
+        parties = Party.query.filter(Party.party_end_datetime < datetime.utcnow(),
+                                     func.year(Party.party_end_datetime) == func.year(now),
+                                     func.month(Party.party_end_datetime) == func.month(now)).all()
+        tickets_sold = sum([p.income_number_tickets_sold for p in parties])
+        commission = sum([p.income_club_owner_commission for p in parties])
+        return {
+            "tickets_sold": tickets_sold,
+            "commission": cents_to_euro(commission),
+        }
+
+
+@api.route("/dashboard/last_month")
+class OrganizerAPIDashboardLastMonth(Resource):
+
+    @api.response(200, "Last month's financial data")
+    @login_required
+    @requires_access_level(ACCESS_CLUB_OWNER)
+    def get(self):
+        """Get last month's financial data"""
+        now = datetime.utcnow()
+        last_month = now.replace(month=now.month - 1 or 12)
+        parties = Party.query.filter(Party.party_end_datetime < datetime.utcnow(),
+                                     func.year(Party.party_end_datetime) == func.year(now),
+                                     func.month(Party.party_end_datetime) == func.month(last_month)).all()
+        tickets_sold = sum([p.income_number_tickets_sold for p in parties])
+        commission = sum([p.income_club_owner_commission for p in parties])
+        return {
+            "tickets_sold": tickets_sold,
+            "commission": cents_to_euro(commission),
+        }
 
 
 @api.route("/create_new_hostess")

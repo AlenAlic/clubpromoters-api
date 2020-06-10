@@ -57,8 +57,8 @@ class OrganizerAPIDashboardThisMonth(Resource):
         parties = Party.query.filter(Party.party_end_datetime < datetime.utcnow(),
                                      func.year(Party.party_end_datetime) == func.year(now),
                                      func.month(Party.party_end_datetime) == func.month(now)).all()
-        tickets_sold = sum([p.income_number_tickets_sold for p in parties])
-        commission = sum([p.income_club_owner_commission for p in parties])
+        tickets_sold = sum([p.income_number_tickets_sold for p in parties] if len(parties) else [0])
+        commission = sum([p.income_club_owner_commission for p in parties] if len(parties) else [0])
         return {
             "tickets_sold": tickets_sold,
             "commission": cents_to_euro(commission),
@@ -78,8 +78,8 @@ class OrganizerAPIDashboardLastMonth(Resource):
         parties = Party.query.filter(Party.party_end_datetime < datetime.utcnow(),
                                      func.year(Party.party_end_datetime) == func.year(now),
                                      func.month(Party.party_end_datetime) == func.month(last_month)).all()
-        tickets_sold = sum([p.income_number_tickets_sold for p in parties])
-        commission = sum([p.income_club_owner_commission for p in parties])
+        tickets_sold = sum([p.income_number_tickets_sold for p in parties] if len(parties) else [0])
+        commission = sum([p.income_club_owner_commission for p in parties] if len(parties) else [0])
         return {
             "tickets_sold": tickets_sold,
             "commission": cents_to_euro(commission),

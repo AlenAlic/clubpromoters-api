@@ -83,9 +83,9 @@ class OrganizerAPIDashboardThisMonth(Resource):
         purchases = Purchase.query.filter(Purchase.purchase_datetime < datetime.utcnow(),
                                           func.year(Purchase.purchase_datetime) == func.year(now),
                                           func.month(Purchase.purchase_datetime) == func.month(now)).all()
-        revenue = sum([p.price + p.administration_costs for p in purchases])
+        revenue = sum([p.price + p.administration_costs for p in purchases] if len(purchases) else [0])
         expenses = sum([p.refunded_amount + p.expenses_promoter_commissions +
-                        p.expenses_club_owner_commissions for p in purchases])
+                        p.expenses_club_owner_commissions for p in purchases] if len(purchases) else [0])
         profit = revenue - expenses
         return {
             "revenue": cents_to_euro(revenue),
@@ -107,9 +107,9 @@ class OrganizerAPIDashboardLastMonth(Resource):
         purchases = Purchase.query.filter(Purchase.purchase_datetime < datetime.utcnow(),
                                           func.year(Purchase.purchase_datetime) == func.year(now),
                                           func.month(Purchase.purchase_datetime) == func.month(last_month)).all()
-        revenue = sum([p.price + p.administration_costs for p in purchases])
+        revenue = sum([p.price + p.administration_costs for p in purchases] if len(purchases) else [0])
         expenses = sum([p.refunded_amount + p.expenses_promoter_commissions +
-                        p.expenses_club_owner_commissions for p in purchases])
+                        p.expenses_club_owner_commissions for p in purchases] if len(purchases) else [0])
         profit = revenue - expenses
         return {
             "revenue": cents_to_euro(revenue),

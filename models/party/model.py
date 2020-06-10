@@ -97,6 +97,10 @@ class Party(db.Model, TrackModifications):
                 "expenses_club_owner_commissions": cents_to_euro(self.expenses_club_owner_commissions),
                 "total_profit": cents_to_euro(self.total_profit),
             })
+        if current_user.is_club_owner:
+            data.update({
+                "commission": cents_to_euro(self.income_club_owner_commission),
+            })
         return data
 
     def purchases_with_status(self, status=""):

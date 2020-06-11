@@ -60,6 +60,14 @@ class Purchase(db.Model, TrackModifications):
     def number_of_tickets(self):
         return len(self.tickets)
 
+    @property
+    def number_of_sold_tickets(self):
+        return len([t for t in self.tickets if not t.refunded])
+
+    @property
+    def number_of_refunded_tickets(self):
+        return len([t for t in self.tickets if t.refunded])
+
     def mollie_description(self):
         return f"{len(self.tickets)} tickets to {self.party.name}"
 
@@ -176,23 +184,18 @@ class Purchase(db.Model, TrackModifications):
         return self.price - self.receipt_price_no_vat + \
                self.administration_costs - self.administration_costs_no_vat
 
-    # PromoterFinances
-    def promoter_tickets(self):
-        return len(self.tickets) if self.status == STATUS_PAID else 0
-
     # Organizer
     @property
     def expenses_promoter_commissions(self):
         if self.status == STATUS_PAID:
-            return int(round(max([
-                self.ticket_price * self.promoter_commission / 100, self.minimum_promoter_commission
-            ]) * self.number_of_tickets))
+            return max([int(self.ticket_price * self.promoter_commission / 100), self.minimum_promoter_commission])\
+                   * self.number_of_sold_tickets
         return 0
 
     @property
     def expenses_club_owner_commissions(self):
         if self.status == STATUS_PAID:
-            return int(round((self.price - self.refunded_amount) * self.club_owner_commission / 100))
+            return int((self.price - self.refunded_amount) * self.club_owner_commission / 100)
         return 0
 
     # Promoter

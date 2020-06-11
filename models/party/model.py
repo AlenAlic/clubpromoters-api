@@ -127,8 +127,15 @@ class Party(db.Model, TrackModifications):
             "location": self.location.json(),
             "start_date": datetime_browser(self.party_start_datetime),
             "end_date": datetime_browser(self.party_end_datetime),
-            "tickets": sum([p.promoter_tickets() for p in self.purchases if p.promoter == user]),
-            "commission": sum([p.expenses_promoter_commissions for p in self.purchases if p.promoter == user]),
+            "number_of_sold_tickets": sum([
+                p.number_of_sold_tickets for p in self.purchases if p.promoter == user
+            ]),
+            "number_of_refunded_tickets": sum([
+                p.number_of_refunded_tickets for p in self.purchases if p.promoter == user
+            ]),
+            "commission": sum([
+                cents_to_euro(p.expenses_promoter_commissions) for p in self.purchases if p.promoter == user
+            ]),
         }
         return data
 

@@ -321,7 +321,7 @@ class User(UserMixin, Anonymous, db.Model, TrackModifications):
                                           func.year(Purchase.purchase_datetime) == func.year(month),
                                           Purchase.promoter_id == self.user_id,
                                           Purchase.status == STATUS_PAID).all()
-        total = sum([p.expenses_promoter_commissions for p in purchases])
+        total = cents_to_euro(sum([p.expenses_promoter_commissions for p in purchases]))
         parties = Party.query.filter(Party.party_id.in_([p.party_id for p in purchases if p.promoter == self])) \
             .order_by(Party.party_start_datetime).all()
         data = {

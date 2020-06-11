@@ -112,6 +112,7 @@ class User(UserMixin, Anonymous, db.Model, TrackModifications):
     phone_number = db.Column(db.String(256), nullable=False)
     invoice_kvk_number = db.Column(db.String(128))
     invoice_vat_number = db.Column(db.String(128))
+    invoices = db.relationship("Invoice", back_populates='user')
 
     def __repr__(self):
         return f'{self.email}'

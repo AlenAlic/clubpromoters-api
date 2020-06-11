@@ -73,6 +73,9 @@ def register_blueprints(app):
     from backend.receipts import bp as receipts_bp
     app.register_blueprint(receipts_bp, url_prefix="/receipts")
 
+    from backend.invoices import bp as invoices_bp
+    app.register_blueprint(invoices_bp, url_prefix="/invoices")
+
     from backend.settings import bp as settings_bp
     app.register_blueprint(settings_bp, url_prefix="/settings")
 

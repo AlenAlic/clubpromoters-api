@@ -23,19 +23,29 @@ class Configuration(db.Model, TrackModifications):
     receipt_address = db.Column(db.String(128))
     receipt_country = db.Column(db.String(128))
     receipt_phone = db.Column(db.String(128))
-    invoice_legal_name = db.Column(db.String(128))
+    invoice_legal_name = db.Column(db.String(128), nullable=False)
     invoice_street = db.Column(db.String(256), nullable=False)
     invoice_street_number = db.Column(db.String(12), nullable=False)
     invoice_street_number_addition = db.Column(db.String(12), default="")
     invoice_postal_code = db.Column(db.Integer(), nullable=False)
     invoice_postal_code_letters = db.Column(db.String(2), nullable=False)
     invoice_city = db.Column(db.String(256), nullable=False)
-    invoice_kvk_number = db.Column(db.String(128))
-    invoice_vat_number = db.Column(db.String(128))
+    invoice_email_address = db.Column(db.String(128), nullable=False)
+    invoice_kvk_number = db.Column(db.String(128), nullable=False)
+    invoice_vat_number = db.Column(db.String(128), nullable=False)
+    invoice_iban = db.Column(db.String(30), nullable=False)
     invoice_vat = db.Column(db.Integer(), nullable=False, default=21)
 
     def allowed_file_types(self):
         return self.allowed_image_types.split(",")
+
+    @property
+    def invoice_street_line(self):
+        return f"{self.invoice_street} {self.invoice_street_number}{self.invoice_street_number_addition}"
+
+    @property
+    def invoice_postal_code_line(self):
+        return f"{self.invoice_postal_code} {self.invoice_postal_code_letters}, {self.invoice_city}"
 
     def json(self):
         return {

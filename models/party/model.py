@@ -1,5 +1,5 @@
 from ext import db
-from models.tables import TABLE_PARTY, TABLE_LOCATION, TABLE_USERS, TABLE_FILE, TABLE_PARTY_FILES
+from models.tables import TABLE_PARTY, TABLE_LOCATION, TABLE_USERS, TABLE_FILE, TABLE_PARTY_FILES, TABLE_INVOICE
 from models import TrackModifications
 from flask_login import current_user
 from datetime import datetime, timedelta
@@ -7,6 +7,7 @@ from sqlalchemy.ext.associationproxy import association_proxy
 from constants.mollie import STATUS_OPEN, STATUS_PENDING, STATUS_PAID
 from utilities import datetime_browser, cents_to_euro
 from .constants import NORMAL
+import locale
 
 
 class Party(db.Model, TrackModifications):
@@ -31,6 +32,8 @@ class Party(db.Model, TrackModifications):
     promoter_commission = db.Column(db.Integer, nullable=False, default=15)
     description = db.Column(db.String(1024), nullable=True)
     interval = db.Column(db.Integer, nullable=False, default=200)
+    invoice_id = db.Column(db.Integer, db.ForeignKey(f"{TABLE_INVOICE}.invoice_id"))
+    invoice = db.relationship("Invoice", back_populates="parties")
 
     def __repr__(self):
         return f"{self.party_id}"
@@ -102,6 +105,12 @@ class Party(db.Model, TrackModifications):
                 "commission": cents_to_euro(self.income_club_owner_commission),
             })
         return data
+
+    def invoice_date(self, language):
+        locale.setlocale(locale.LC_ALL, language)
+        due_date = self.party_start_datetime.strftime("%d %B %Y")
+        locale.setlocale(locale.LC_ALL, 'C')
+        return due_date
 
     def purchases_with_status(self, status=""):
         return [p for p in self.purchases if p.status == status]

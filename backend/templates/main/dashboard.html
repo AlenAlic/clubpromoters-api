@@ -11,6 +11,9 @@
     {% with url=url_for("receipts.index"), title="Receipts", image="receipts.png" %}
         {% include "_dashboard_page.html" %}
     {% endwith %}
+    {% with url=url_for("invoices.index"), title="Invoices", image="invoices.png" %}
+        {% include "_dashboard_page.html" %}
+    {% endwith %}
     {% with url=url_for("email.index"), title="E-mails", image="email.png" %}
         {% include "_dashboard_page.html" %}
     {% endwith %}

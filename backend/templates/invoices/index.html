@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+<div class="row mt-3">
+    <div class="col-12">
+        <form method="POST" enctype="multipart/form-data">
+            <h3 class="mb-4">Invoice settings</h3>
+            {{ settings_form.hidden_tag() }}
+            <div class="row">
+                <div class="col-12 col-md-4">
+                    {{ forms.form_field(settings_form.invoice_legal_name) }}
+                    {{ forms.form_field(settings_form.invoice_kvk_number) }}
+                    {{ forms.form_field(settings_form.invoice_vat_number) }}
+                    {{ forms.form_field(settings_form.invoice_iban) }}
+                    {{ forms.form_field(settings_form.invoice_email_address) }}
+                    {{ forms.form_field(settings_form.invoice_vat) }}
+                </div>
+                <div class="col-12 col-md-8">
+                    <div class="row">
+                        <div class="col-6">
+                            {{ forms.form_field(settings_form.invoice_street) }}
+                        </div>
+                        <div class="col-3">
+                            {{ forms.form_field(settings_form.invoice_street_number) }}
+                        </div>
+                        <div class="col-3">
+                            {{ forms.form_field(settings_form.invoice_street_number_addition) }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-8">
+                            {{ forms.form_field(settings_form.invoice_postal_code) }}
+                        </div>
+                        <div class="col-4">
+                            {{ forms.form_field(settings_form.invoice_postal_code_letters) }}
+                        </div>
+                    </div>
+                    {{ forms.form_field(settings_form.invoice_city) }}
+                </div>
+            </div>
+            {{ forms.form_field(settings_form.save_changes, class_="float-right") }}
+        </form>
+    </div>
+</div>
+{% endblock %}

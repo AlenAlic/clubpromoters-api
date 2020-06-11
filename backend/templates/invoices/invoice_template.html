@@ -1,0 +1,148 @@
+{% set lang = {
+"nl_NL": {
+    "header": "Factuur uitgereikt door afnemer:",
+    "kvk": "KvK",
+    "iban": "IBAN",
+    "invoice_nr": "Factuurnummer",
+    "invoice_date": "Factuurdatum",
+    "invoice_due_date": "Vervaldatum",
+    "invoice_delivery_date": "Leverdatum",
+    "description": "Omschrijving",
+    "number": "Aantal",
+    "amount_vat": "Bedrag incl. btw",
+    "vat": "Btw",
+    "total": "Totaal",
+    "commission": "Commissie",
+    "subtotal": "Subtotaal",
+    "total_vat": "Totaal btw",
+    "footer_1": "Het bedrag van",
+    "footer_2": "moet uiterlijk",
+    "footer_3": "overgemaakt zijn naar rekeningnummer",
+    "footer_4": "ten name van",
+    "footer_5": "onder vermelding van factuurnummer",
+},
+"en_US": {
+    "header": "Invoice issued by client:",
+    "kvk": "CoC",
+    "iban": "IBAN",
+    "invoice_nr": "Invoice number",
+    "invoice_date": "Invoice date",
+    "invoice_due_date": "Due date",
+    "invoice_delivery_date": "Delivery date",
+    "description": "Description",
+    "number": "Number",
+    "amount_vat": "Amount incl. VAT",
+    "vat": "VAT",
+    "total": "Total",
+    "commission": "Commission",
+    "subtotal": "Subtotal",
+    "total_vat": "Total VAT",
+    "footer_1": "The amount of",
+    "footer_2": "must be transferred no later than",
+    "footer_3": "to account number",
+    "footer_4": "in the name of",
+    "footer_5": "stating invoice number",
+}
+} %}
+
+<!DOCTYPE html>
+<html lang="en">
+    {% include "invoices/invoice_template_head.html" %}
+    <body style="margin: 0 auto; max-width: 1200px">
+        <img style="float: right; width: 255px; height: 121px;" src="{{url_for('static', filename='invoice_logo.svg')}}" alt="logo" />
+        <div class="invoice-header">
+            <div>{{ lang[invoice.language]["header"] }}</div>
+            <div>
+                <b>{{ invoice.cp_legal_name }}</b>
+            </div>
+            <div>{{ invoice.cp_street_line }}</div>
+            <div>{{ invoice.cp_postal_code_line }}</div>
+            <div>{{ invoice.cp_email_address }}</div>
+            <div>
+                <small>{{ lang[invoice.language]["kvk"] }}: {{ invoice.cp_kvk_number }}</small>
+            </div>
+            <div>
+                <small>{{ lang[invoice.language]["vat"] }}: {{ invoice.cp_vat_number }}</small>
+            </div>
+            <div>
+                <small>{{ lang[invoice.language]["iban"] }}: {{ invoice.cp_iban }}</small>
+            </div>
+        </div>
+        <div class="invoice-subheader">
+            <table>
+                <tbody>
+                <tr>
+                    <td colspan="2"><b>{{ lang[invoice.language]["invoice_nr"] }}: {{ invoice.invoice_number }}</b></td>
+                </tr>
+                <tr>
+                    <td>{{ lang[invoice.language]["invoice_date"] }}:</td>
+                    <td>{{ invoice.date.strftime("%d-%m-%Y") }}</td>
+                </tr>
+                <tr>
+                    <td>{{ lang[invoice.language]["invoice_due_date"] }}:</td>
+                    <td>{{ invoice.expiration_date.strftime("%d-%m-%Y") }}</td>
+                </tr>
+                <tr>
+                    <td>{{ lang[invoice.language]["invoice_delivery_date"] }}:</td>
+                    <td>{{ invoice.delivery_date }}</td>
+                </tr>
+                </tbody>
+            </table>
+            <div class="right">
+                <div>
+                    <b>{{ invoice.invoice_legal_name }}</b>
+                </div>
+                <div>{{ invoice.invoice_street_line }}</div>
+                <div>{{ invoice.invoice_postal_code_line }}</div>
+                <div>{{ invoice.invoice_country }}</div>
+                <div>{{ invoice.invoice_phone_number }}</div>
+            </div>
+        </div>
+        <div>
+            <table class="invoice-table invoice-products">
+                <thead>
+                <tr class="bottom_border">
+                    <th>{{ lang[invoice.language]["description"] }}</th>
+                    <th>{{ lang[invoice.language]["number"] }}</th>
+                    <th>{{ lang[invoice.language]["amount_vat"] }}</th>
+                    <th>{{ lang[invoice.language]["vat"] }}</th>
+                    <th>{{ lang[invoice.language]["total"] }}</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for party in invoice.parties %}
+                <tr class="bottom_border__light">
+                    <td>{{ lang[invoice.language]["commission"] }} {{ party.name }}, {{ party.invoice_date(invoice.language) }}</td>
+                    <td>1</td>
+                    <td>{{ party.income_club_owner_commission | cents_to_euro | euro_format }}</td>
+                    <td>{{ invoice.invoice_vat }}%</td>
+                    <td>{{ party.income_club_owner_commission | cents_to_euro | euro_format }}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            <table class="invoice-table invoice-table__right invoice-summary">
+                <tbody>
+                <tr>
+                    <th></th>
+                    <th>{{ lang[invoice.language]["subtotal"] }}</th>
+                    <td>{{ invoice.total_no_vat | cents_to_euro | euro_format }}</td>
+                </tr>
+                <tr>
+                    <th></th>
+                    <th>{{ lang[invoice.language]["total_vat"] }} {{ invoice.invoice_vat }}%</th>
+                    <td>{{ invoice.vat_total | cents_to_euro | euro_format }}</td>
+                </tr>
+                <tr class="invoice-total">
+                    <th></th>
+                    <th style="text-align: right;" class="invoice-total__border">{{ lang[invoice.language]["total"] }}</th>
+                    <th class="invoice-total__border">{{ invoice.total | cents_to_euro | euro_format }}</th>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="invoice-ending-line">
+            {{ lang[invoice.language]["footer_1"] }} <b>{{ invoice.total | cents_to_euro | euro_format }}</b> {{ lang[invoice.language]["footer_2"] }} <b>{{ invoice.due_date }}</b> {{ lang[invoice.language]["footer_3"] }} <b>{{ invoice.invoice_iban }}</b> {{ lang[invoice.language]["footer_4"] }} <b>{{ invoice.cp_legal_name }}</b> {{ lang[invoice.language]["footer_5"] }} <b>{{ invoice.invoice_number }}</b>
+        </div>
+    </body>
+</html>

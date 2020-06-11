@@ -48,11 +48,11 @@
                 </thead>
                 <tbody>
                 <tr>
-                    <td>Ticket for {{ purchase.party.name }}</td>
-                    <td>{{ conf.vat }}%</td>
-                    <td>{{ purchase.receipt_ticket_price_no_vat | euro_format }}</td>
+                    <td>Tickets for {{ purchase.party.name }}</td>
+                    <td>{{ purchase.vat_percentage }}%</td>
+                    <td>{{ purchase.receipt_ticket_price_no_vat | cents_to_euro | euro_format }}</td>
                     <td>{{ purchase.number_of_tickets }}</td>
-                    <td>{{ purchase.receipt_price_no_vat | euro_format }}</td>
+                    <td>{{ purchase.receipt_price_no_vat | cents_to_euro| euro_format }}</td>
                 </tr>
                 </tbody>
             </table>
@@ -61,22 +61,22 @@
                 <tr>
                     <th></th>
                     <th>Total products</th>
-                    <td>{{ purchase.receipt_price_no_vat | euro_format }}</td>
+                    <td>{{ purchase.receipt_price_no_vat | cents_to_euro| euro_format }}</td>
                 </tr>
                 <tr>
                     <th></th>
                     <th>Administrative costs</th>
-                    <td>{{ purchase.administration_costs_no_vat | euro_format }}</td>
+                    <td>{{ purchase.administration_costs_no_vat | cents_to_euro| euro_format }}</td>
                 </tr>
                 <tr>
                     <th></th>
                     <th>Total (ex. VAT)</th>
-                    <td>{{ (purchase.administration_costs_no_vat + purchase.receipt_price_no_vat) | euro_format }}</td>
+                    <td>{{ (purchase.administration_costs_no_vat + purchase.receipt_price_no_vat) | cents_to_euro| euro_format }}</td>
                 </tr>
                 <tr>
                     <th></th>
                     <th>Total VAT</th>
-                    <td>{{ purchase.vat | euro_format }}</td>
+                    <td>{{ purchase.vat | cents_to_euro | euro_format }}</td>
                 </tr>
                 <tr class="receipt-total">
                     <th></th>

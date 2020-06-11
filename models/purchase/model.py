@@ -161,20 +161,20 @@ class Purchase(db.Model, TrackModifications):
 
     @property
     def receipt_ticket_price_no_vat(self):
-        return cents_to_euro(self.ticket_price * (100 - self.vat_percentage)/100)
+        return int(self.ticket_price * 100 / (self.vat_percentage + 100))
 
     @property
     def receipt_price_no_vat(self):
-        return cents_to_euro(self.price * (100 - self.vat_percentage)/100)
+        return self.receipt_ticket_price_no_vat * self.number_of_tickets
 
     @property
     def administration_costs_no_vat(self):
-        return cents_to_euro(self.administration_costs * (100 - self.vat_percentage)/100)
+        return int(self.administration_costs * 100 / (self.vat_percentage + 100))
 
     @property
     def vat(self):
-        return cents_to_euro(self.price) - self.receipt_price_no_vat + \
-               cents_to_euro(self.administration_costs) - self.administration_costs_no_vat
+        return self.price - self.receipt_price_no_vat + \
+               self.administration_costs - self.administration_costs_no_vat
 
     # PromoterFinances
     def promoter_tickets(self):

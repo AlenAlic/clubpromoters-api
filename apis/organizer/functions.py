@@ -6,10 +6,10 @@ from datetime import datetime
 
 
 def parties_list(year, month):
-    last_month = last_month_datetime(year, month)
+    dt = datetime(year, month, 1)
     party = Party.query.filter(Party.is_active.is_(True),
-                               func.month(Party.party_start_datetime) == func.month(last_month),
-                               func.year(Party.party_start_datetime) == func.year(last_month)).all()
+                               func.month(Party.party_start_datetime) == func.month(dt),
+                               func.year(Party.party_start_datetime) == func.year(dt)).all()
     return [p.json() for p in party]
 
 

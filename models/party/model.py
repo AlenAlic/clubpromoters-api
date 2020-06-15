@@ -1,5 +1,5 @@
 from ext import db
-from models.tables import TABLE_PARTY, TABLE_LOCATION, TABLE_USERS, TABLE_FILE, TABLE_PARTY_FILES, TABLE_INVOICE
+from models.tables import TABLE_PARTY, TABLE_LOCATION, TABLE_USERS, TABLE_FILE, TABLE_PARTY_FILES, TABLE_PARTY_INVOICE
 from models import TrackModifications
 from flask_login import current_user
 from datetime import datetime, timedelta
@@ -32,11 +32,10 @@ class Party(db.Model, TrackModifications):
     promoter_commission = db.Column(db.Integer, nullable=False, default=15)
     description = db.Column(db.String(1024), nullable=True)
     interval = db.Column(db.Integer, nullable=False, default=200)
-    invoice_id = db.Column(db.Integer, db.ForeignKey(f"{TABLE_INVOICE}.invoice_id"))
-    invoice = db.relationship("Invoice", back_populates="parties")
+    invoices = db.relationship("Invoice", secondary=TABLE_PARTY_INVOICE)
 
     def __repr__(self):
-        return f"{self.party_id}"
+        return f"{self.party_id}: {self.club_owner.club}  -  {self.party_start_datetime}"
 
     def tickets_with_status(self, status=""):
         return [t for p in self.purchases for t in p.tickets if p.status == status]
@@ -165,10 +164,18 @@ class Party(db.Model, TrackModifications):
         return self.income_tickets_sold + self.income_administration_costs - \
                (self.expenses_refunds + self.expenses_promoter_commissions + self.expenses_club_owner_commissions)
 
+    def has_commission(self, user):
+        if user.is_club_owner:
+            return self.income_club_owner_commission > 0
+        if user.is_promoter:
+            return self.income_promoter_commission(user) > 0
+
     # Promoter
-    @property
-    def income_promoter_commission(self):
-        return self.expenses_promoter_commissions
+    def promoter_purchases(self, promoter):
+        return [p for p in self.purchases if p.promoter == promoter and p.status == STATUS_PAID]
+
+    def income_promoter_commission(self, promoter):
+        return sum([p.income_promoter_commissions for p in self.promoter_purchases(promoter)])
 
     # Club Owner
     @property

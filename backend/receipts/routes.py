@@ -21,8 +21,7 @@ def index():
             if p:
                 p.generate_receipt()
                 db.session.commit()
-                directory = os.path.join(current_app.static_folder, RECEIPTS_FOLDER)
-                return send_from_directory(directory=directory, filename=p.receipt_file_name,
+                return send_from_directory(directory=current_app.receipts_folder, filename=p.receipt_file_name,
                                            mimetype="application/pdf", as_attachment=True, cache_timeout=0)
             return redirect(url_for("receipts.index"))
         if settings_form.save_changes.name in request.form and settings_form.validate_on_submit():

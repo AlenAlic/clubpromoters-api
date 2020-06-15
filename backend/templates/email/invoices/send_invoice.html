@@ -1,0 +1,36 @@
+{% extends "email/base.html" %}
+
+{% if invoice.dutch %}
+{% set title="Factuur" %}
+{% else %}
+{% set title="Invoice" %}
+{% endif %}
+
+{% block body %}
+<table style="width: 100%; max-width: 800px; border: 1px solid lightgrey; margin-left: auto; margin-right: auto;">
+    <tbody class="table-main-body">
+        {% with title=title %}
+            {% include "email/snippets/header.html" %}
+        {% endwith %}
+        {% if invoice.dutch %}
+        <tr>
+            <td style="padding-bottom: 16px; text-align: center;">
+                <p>Beste {{ invoice.user.first_name }},</p>
+                <br/>
+                <p>De factuur van deze maand vind je in de bijlage.</p>
+                {% include "email/snippets/closing_NL.html" %}
+            </td>
+        </tr>
+        {% else %}
+        <tr>
+            <td style="padding-bottom: 16px; text-align: center;">
+                <p>Dear {{ invoice.user.first_name }},</p>
+                <br/>
+                <p>Please find this months invoice in the attachments.</p>
+                {% include "email/snippets/closing.html" %}
+            </td>
+        </tr>
+        {% endif %}
+    </tbody>
+</table>
+{% endblock %}

@@ -35,6 +35,7 @@ class Configuration(db.Model, TrackModifications):
     invoice_vat_number = db.Column(db.String(128), nullable=False)
     invoice_iban = db.Column(db.String(30), nullable=False)
     invoice_vat = db.Column(db.Integer(), nullable=False, default=21)
+    bookkeeping_program_email = db.Column(db.String(256), nullable=False)
 
     def allowed_file_types(self):
         return self.allowed_image_types.split(",")

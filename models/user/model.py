@@ -109,6 +109,7 @@ class User(UserMixin, Anonymous, db.Model, TrackModifications):
     postal_code = db.Column(db.Integer(), nullable=False)
     postal_code_letters = db.Column(db.String(2), nullable=False)
     city = db.Column(db.String(256), nullable=False)
+    country = db.Column(db.String(256), nullable=False)
     phone_number = db.Column(db.String(256), nullable=False)
     invoice_kvk_number = db.Column(db.String(128))
     invoice_vat_number = db.Column(db.String(128))
@@ -286,26 +287,21 @@ class User(UserMixin, Anonymous, db.Model, TrackModifications):
             })
         return data
 
-    def commissions_json(self, purchases):
+    def commissions_json(self, parties):
         data = {
             'id': self.user_id,
             "full_name": self.full_name,
             "access": self.access,
+            "business_entity": self.business_entity,
         }
         total = 0
         if self.is_promoter:
-            purchases = [p for p in purchases if p.promoter == self and p.status == STATUS_PAID]
-            total = sum([p.income_promoter_commissions for p in purchases])
-            parties = Party.query.filter(Party.party_id.in_([p.party_id for p in purchases if p.promoter == self])) \
-                .order_by(Party.party_start_datetime).all()
+            total = sum([p.income_promoter_commission(self) for p in parties])
             data.update({
                 "parties": [p.promoter_commissions(self) for p in parties]
             })
         if self.is_club_owner:
-            purchases = [p for p in purchases if p.party.club_owner == self and p.status == STATUS_PAID]
-            total = sum([p.income_club_owner_commissions for p in purchases])
-            parties = Party.query.filter(Party.party_id.in_([p.party_id for p in purchases])) \
-                .order_by(Party.party_start_datetime).all()
+            total = sum([p.income_club_owner_commission for p in parties])
             data.update({
                 "club": self.club,
                 "parties": [p.json() for p in parties],
@@ -329,3 +325,15 @@ class User(UserMixin, Anonymous, db.Model, TrackModifications):
             "total": total,
         }
         return data
+
+    def invoice_parties(self, dt):
+        parties = []
+        if self.is_club_owner:
+            parties = [p for p in self.parties
+                       if p.party_start_datetime.month == dt.month and p.party_start_datetime.year == dt.year]
+            parties = [p for p in parties if p.club_owner == self and p.has_commission(self)]
+        if self.is_promoter:
+            parties = set([p.party for p in self.purchases if p.party.party_start_datetime.month == dt.month
+                           and p.party.party_start_datetime.year == dt.year])
+            parties = [p for p in parties if p.has_commission(self)]
+        return parties

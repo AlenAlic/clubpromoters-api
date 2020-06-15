@@ -10,6 +10,7 @@
     "description": "Omschrijving",
     "number": "Aantal",
     "amount_vat": "Bedrag incl. btw",
+    "amount": "Bedrag",
     "vat": "Btw",
     "total": "Totaal",
     "commission": "Commissie",
@@ -32,6 +33,7 @@
     "description": "Description",
     "number": "Number",
     "amount_vat": "Amount incl. VAT",
+    "amount": "Amount",
     "vat": "VAT",
     "total": "Total",
     "commission": "Commission",
@@ -94,8 +96,20 @@
                 </div>
                 <div>{{ invoice.invoice_street_line }}</div>
                 <div>{{ invoice.invoice_postal_code_line }}</div>
+                {% if invoice.invoice_country %}
                 <div>{{ invoice.invoice_country }}</div>
+                {% endif %}
+                {% if invoice.invoice_phone_number %}
                 <div>{{ invoice.invoice_phone_number }}</div>
+                {% endif %}
+                {% if invoice.business_invoice %}
+                <div>
+                    <small>{{ lang[invoice.language]["kvk"] }}: {{ invoice.invoice_kvk_number }}</small>
+                </div>
+                <div>
+                    <small>{{ lang[invoice.language]["vat"] }}: {{ invoice.invoice_vat_number }}</small>
+                </div>
+                {% endif %}
             </div>
         </div>
         <div>
@@ -104,25 +118,42 @@
                 <tr class="bottom_border">
                     <th>{{ lang[invoice.language]["description"] }}</th>
                     <th>{{ lang[invoice.language]["number"] }}</th>
+                    {% if invoice.business_invoice %}
                     <th>{{ lang[invoice.language]["amount_vat"] }}</th>
                     <th>{{ lang[invoice.language]["vat"] }}</th>
+                    {% else %}
+                    <th>{{ lang[invoice.language]["amount"] }}</th>
+                    {% endif %}
                     <th>{{ lang[invoice.language]["total"] }}</th>
                 </tr>
                 </thead>
                 <tbody>
                 {% for party in invoice.parties %}
-                <tr class="bottom_border__light">
-                    <td>{{ lang[invoice.language]["commission"] }} {{ party.name }}, {{ party.invoice_date(invoice.language) }}</td>
-                    <td>1</td>
-                    <td>{{ party.income_club_owner_commission | cents_to_euro | euro_format }}</td>
-                    <td>{{ invoice.invoice_vat }}%</td>
-                    <td>{{ party.income_club_owner_commission | cents_to_euro | euro_format }}</td>
-                </tr>
+                    {% if invoice.promoter_invoice %}
+                    <tr class="bottom_border__light">
+                        <td>{{ lang[invoice.language]["commission"] }} {{ party.name }}, {{ party.invoice_date(invoice.language) }}</td>
+                        <td>1</td>
+                        <td>{{ party.income_promoter_commission(invoice.user) | cents_to_euro | euro_format }}</td>
+                        {% if invoice.business_invoice %}
+                        <td>{{ invoice.invoice_vat }}%</td>
+                        {% endif %}
+                        <td>{{ party.income_promoter_commission(invoice.user) | cents_to_euro | euro_format }}</td>
+                    </tr>
+                    {% else %}
+                    <tr class="bottom_border__light">
+                        <td>{{ lang[invoice.language]["commission"] }} {{ party.name }}, {{ party.invoice_date(invoice.language) }}</td>
+                        <td>1</td>
+                        <td>{{ party.income_club_owner_commission | cents_to_euro | euro_format }}</td>
+                        <td>{{ invoice.invoice_vat }}%</td>
+                        <td>{{ party.income_club_owner_commission | cents_to_euro | euro_format }}</td>
+                    </tr>
+                    {% endif %}
                 {% endfor %}
                 </tbody>
             </table>
             <table class="invoice-table invoice-table__right invoice-summary">
                 <tbody>
+                {% if invoice.business_invoice %}
                 <tr>
                     <th></th>
                     <th>{{ lang[invoice.language]["subtotal"] }}</th>
@@ -133,6 +164,7 @@
                     <th>{{ lang[invoice.language]["total_vat"] }} {{ invoice.invoice_vat }}%</th>
                     <td>{{ invoice.vat_total | cents_to_euro | euro_format }}</td>
                 </tr>
+                {% endif %}
                 <tr class="invoice-total">
                     <th></th>
                     <th style="text-align: right;" class="invoice-total__border">{{ lang[invoice.language]["total"] }}</th>

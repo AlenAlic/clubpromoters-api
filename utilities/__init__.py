@@ -8,7 +8,6 @@ from werkzeug.utils import secure_filename
 from models.file import File
 from ext import db
 from time import time
-from constants import UPLOAD_FOLDER
 
 
 def datetime_python(s):
@@ -46,7 +45,8 @@ def format_euro(price):
 def last_month_datetime(year, month):
     last_month = datetime(year, month, 1)
     previous_month = last_month.month - 1 or 12
-    if previous_month == 1:
+    last_month = last_month.replace(month=previous_month)
+    if previous_month == 12:
         last_month.replace(year=last_month.year - 1)
     return last_month
 
@@ -63,7 +63,7 @@ def allowed_file(filename):
 def upload_file(file, user):
     if file.filename != "" and (allowed_file(file.filename) or file.mimetype == "application/pdf"):
         filename = secure_filename(file.filename)
-        directory = os.path.join(current_app.static_folder, UPLOAD_FOLDER, f"{user.user_id}")
+        directory = os.path.join(current_app.uploads_folder, f"{user.user_id}")
         path = os.path.join(directory, f"{time()}.{file_extension(filename)}")
         if File.query.filter(File.path == path).first() is not None:
             return None

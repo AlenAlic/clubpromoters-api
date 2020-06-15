@@ -30,13 +30,14 @@ def create_app(config_class=Config):
     @app.template_filter("euro_format")
     def euro_format(p):
         return "€{:,.2f}".format(p)
+
     # Converting prices to euro
     @app.template_filter("cents_to_euro")
     def euro_cents_to_euro(c):
         return cents_to_euro(c)
 
     # Create static folders (if not available)
-    make_static_folders(app)
+    make_folders(app)
 
     # Register blueprints, API, and sockets
     register_blueprints(app)
@@ -87,12 +88,19 @@ def register_blueprints(app):
     apis.init_app(app)
 
 
-def make_static_folders(app):
+def make_folders(app):
+    generated = "generated"
+    generated_path = os.path.join(app.root_path, generated)
+    app.uploads_folder = os.path.join(app.static_folder, UPLOAD_FOLDER)
+    app.receipts_folder = os.path.join(generated_path, RECEIPTS_FOLDER)
+    app.invoices_folder = os.path.join(generated_path, INVOICES_FOLDER)
+
     # Uploads
-    directory = os.path.join(app.static_folder, UPLOAD_FOLDER)
-    if not os.path.exists(directory):
-        os.makedirs(directory)
+    if not os.path.exists(app.uploads_folder):
+        os.makedirs(app.uploads_folder)
     # Receipts
-    directory = os.path.join(app.static_folder, RECEIPTS_FOLDER)
-    if not os.path.exists(directory):
-        os.makedirs(directory)
+    if not os.path.exists(app.receipts_folder):
+        os.makedirs(app.receipts_folder)
+    # Invoices
+    if not os.path.exists(app.invoices_folder):
+        os.makedirs(app.invoices_folder)

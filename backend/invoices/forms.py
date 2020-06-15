@@ -53,3 +53,19 @@ class InvoiceSettingsForm(FlaskForm):
         conf.invoice_vat = self.invoice_vat.data
         conf.invoice_iban = self.invoice_iban.data
         conf.invoice_email_address = self.invoice_email_address.data
+
+
+class BookkeepingEmailForm(FlaskForm):
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        if request.method == GET:
+            conf = config()
+            self.bookkeeping_program_email.data = conf.bookkeeping_program_email
+
+    bookkeeping_program_email = StringField("Bookkeeping program email address", validators=[DataRequired()])
+    save_email = SubmitField("Save email")
+
+    def save(self):
+        conf = config()
+        conf.bookkeeping_program_email = self.bookkeeping_program_email.data

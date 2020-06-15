@@ -43,7 +43,7 @@ def index():
                         club_owner.commission = conf.default_club_owner_commission
                         db.session.add(club_owner)
                         db.session.flush()
-                        directory = os.path.join(current_app.static_folder, UPLOAD_FOLDER, f"{club_owner.user_id}")
+                        directory = os.path.join(current_app.uploads_folder, f"{club_owner.user_id}")
                         if not os.path.exists(directory):
                             os.makedirs(directory)
                         for img in range(1, 10):

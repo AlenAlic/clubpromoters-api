@@ -2,7 +2,7 @@ from flask import render_template, redirect, url_for, flash
 from backend.email import bp
 from constants import GET
 from mailing.util import filtered_form
-from models import User, Purchase, Ticket, Party
+from models import User, Purchase, Ticket, Party, Invoice
 from utilities import activation_code
 from datetime import datetime, timedelta
 
@@ -15,6 +15,8 @@ NAME_RESET_PASSWORD = "reset_password"
 NAME_PASSWORD_CHANGED = "password_changed"
 GROUP_PURCHASE = "purchase"
 NAME_PURCHASE = "purchased_tickets"
+GROUP_INVOICES = "invoices"
+NAME_SEND_INVOICE = "send_invoice"
 
 
 @bp.route("/", methods=[GET])
@@ -39,6 +41,12 @@ def index():
             "emails": {
                 NAME_PURCHASE: "Confirmed purchase",
             }
+        },
+        {
+            "group": GROUP_INVOICES,
+            "emails": {
+                NAME_SEND_INVOICE: "Invoice sent",
+            }
         }
     ]
     return render_template("email/index.html", email_list=email_list)
@@ -46,6 +54,12 @@ def index():
 
 @bp.route("/preview/<string:group>/<string:name>", methods=[GET])
 def preview(group, name):
+    groups = [GROUP_ERROR, GROUP_AUTH, GROUP_PURCHASE, GROUP_INVOICES]
+    names = [NAME_TRACE, NAME_ACTIVATE_ACCOUNT, NAME_RESET_PASSWORD, NAME_PASSWORD_CHANGED, GROUP_PURCHASE,
+             NAME_SEND_INVOICE]
+    if group not in groups or name not in names:
+        flash("Dit not find e-mail template.")
+        return redirect(url_for("email.index"))
     return render_template("email/preview.html", group=group, name=name)
 
 
@@ -110,5 +124,13 @@ def template(group, name):
                     ticket.number = i + 1
                     purchase.tickets.append(ticket)
             return render_template(path, purchase=purchase)
-    flash("Dit not find e-mail template.")
+    if group == GROUP_INVOICES:
+        if name == NAME_SEND_INVOICE:
+            invoice = Invoice.query.first()
+            if not invoice:
+                usr = User("charlie@test.com", "test")
+                usr.first_name = "Charlie"
+                usr.is_active = True
+                invoice = Invoice(usr, [Party(), Party()], 42)
+            return render_template(path, invoice=invoice)
     return redirect(url_for("email.index"))

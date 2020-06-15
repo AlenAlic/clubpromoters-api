@@ -3,11 +3,11 @@ from flask import send_file
 from ext import db
 from models import login_required, requires_access_level, ACCESS_ORGANIZER, ACCESS_CLUB_OWNER, ACCESS_HOSTESS, \
     ACCESS_PROMOTER
-from models import User, Location, Code, Party, PartyFile, Purchase, Refund, Ticket
+from models import User, Location, Code, Party, PartyFile, Purchase, Refund, Ticket, Invoice
 from models.party.constants import NORMAL
 from datetime import datetime
 from models.configuration import config
-from .functions import parties_list, purchases_list
+from .functions import parties_list, purchases_list, commissions, this_months_invoices
 from apis.auth.email import send_activation_email
 from utilities import activation_code, datetime_python
 from sqlalchemy import or_
@@ -19,6 +19,7 @@ from utilities import euro_to_cents, cents_to_euro
 import xlsxwriter
 from io import BytesIO
 import pyqrcode
+from models.invoice.functions import generate_serial_number
 
 
 api = Namespace("organizer", description="Organizer")
@@ -661,10 +662,67 @@ class OrganizerAPICommissions(Resource):
     def get(self, year, month):
         """List of commissions for a given month for all users"""
         last_month = last_month_datetime(year, month)
-        purchase = Purchase.query.filter(Purchase.purchase_datetime < datetime.utcnow(),
-                                         func.month(Purchase.purchase_datetime) == func.month(last_month),
-                                         func.year(Purchase.purchase_datetime) == func.year(last_month)).all()
-        promoters = list(set([p.promoter_id for p in purchase if p.promoter_id is not None]))
-        club_owners = list(set([p.party.club_owner_id for p in purchase if p.party.club_owner_id is not None]))
-        u = User.query.filter(User.user_id.in_(promoters + club_owners), User.is_active.is_(True)).all()
-        return [user.commissions_json(purchase) for user in u]
+        return commissions(last_month, filter_users=False)
+
+
+@api.route("/invoices")
+class OrganizerAPIInvoices(Resource):
+
+    @api.response(200, "Users with invoices due for last month")
+    @login_required
+    @requires_access_level(ACCESS_ORGANIZER)
+    def get(self):
+        """List of commissions for a given month for all users that will receive a payout"""
+        now = datetime.utcnow()
+        last_month = last_month_datetime(now.year, now.month)
+        return {
+            "users": commissions(last_month),
+            "invoices": [i.json() for i in this_months_invoices(now)],
+        }
+
+    @api.expect(api.model("GenerateInvoices", {
+        "users": fields.List(fields.Integer(required=True)),
+    }), validate=True)
+    @api.response(200, "Invoices generated")
+    @login_required
+    @requires_access_level(ACCESS_ORGANIZER)
+    def post(self):
+        """Generates invoices for a list of users"""
+        now = datetime.utcnow()
+        last_month = last_month_datetime(now.year, now.month)
+        users = User.query.filter(User.user_id.in_(api.payload["users"])).all()
+        for user in users:
+            parties = user.invoice_parties(last_month)
+            serial_number = generate_serial_number(user)
+            invoice = Invoice(user, parties, serial_number)
+            db.session.add(invoice)
+            db.session.flush()
+            invoice.generate_invoice()
+        db.session.commit()
+        return {
+            "users": commissions(last_month),
+            "invoices": [i.json() for i in this_months_invoices(now)],
+        }
+
+
+@api.route("/invoices/send")
+class OrganizerAPIInvoicesSend(Resource):
+
+    @api.expect(api.model("SendInvoices", {
+        "invoices": fields.List(fields.Integer(required=True)),
+    }), validate=True)
+    @api.response(200, "Invoices sent")
+    @login_required
+    @requires_access_level(ACCESS_ORGANIZER)
+    def post(self):
+        """Send invoices"""
+        now = datetime.utcnow()
+        last_month = last_month_datetime(now.year, now.month)
+        invoices = Invoice.query.filter(Invoice.invoice_id.in_(api.payload["invoices"]), Invoice.sent.is_(False)).all()
+        for invoice in invoices:
+            invoice.send()
+        db.session.commit()
+        return {
+            "users": commissions(last_month),
+            "invoices": [i.json() for i in this_months_invoices(now)],
+        }

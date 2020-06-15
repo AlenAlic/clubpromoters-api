@@ -5,7 +5,6 @@ from flask import current_app, render_template, request
 from flask_login import current_user
 from datetime import datetime
 from constants.mollie import STATUS_OPEN, STATUS_PENDING, STATUS_PAID, STATUS_CANCELED
-from constants import RECEIPTS_FOLDER
 from utilities import datetime_browser, cents_to_euro
 from hashlib import sha3_256
 import pyqrcode
@@ -152,8 +151,7 @@ class Purchase(db.Model, TrackModifications):
 
     def generate_receipt(self):
         conf = config()
-        directory = os.path.join(current_app.static_folder, RECEIPTS_FOLDER)
-        path = os.path.join(directory, self.receipt_file_name)
+        path = os.path.join(current_app.receipts_folder, self.receipt_file_name)
         HTML(string=render_template("receipts/receipt_template.html", purchase=self, conf=conf),
              base_url=request.base_url).write_pdf(path)
         self.receipt_path = path

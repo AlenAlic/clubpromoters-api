@@ -1,0 +1,21 @@
+{% if invoice.dutch %}
+Beste {{ invoice.user.first_name }},
+
+
+De factuur van deze maand vind je in de bijlage.
+
+
+Met vriendelijke groet,
+
+het {{ config.PRETTY_URL }} team.
+{% else %}
+Dear {{ invoice.user.first_name }},
+
+
+Please find this months invoice in the attachments.
+
+
+Kind regards,
+
+the {{ config.PRETTY_URL }} team.
+{% endif %}

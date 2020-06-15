@@ -23,6 +23,7 @@ profile = api.model("ProfileResponse", {
     "postal_code": fields.Integer,
     "postal_code_letters": fields.String,
     "city": fields.String,
+    "country": fields.String,
     "phone_number": fields.String,
 })
 
@@ -62,6 +63,7 @@ class UserAPIAddress(Resource):
         "postal_code": fields.Integer(required=True),
         "postal_code_letters": fields.String(required=True),
         "city": fields.String(required=True),
+        "country": fields.String(required=True),
     }), validate=True)
     @api.response(200, "Profile", profile)
     @login_required
@@ -73,6 +75,7 @@ class UserAPIAddress(Resource):
         current_user.postal_code = api.payload["postal_code"]
         current_user.postal_code_letters = api.payload["postal_code_letters"]
         current_user.city = api.payload["city"]
+        current_user.country = api.payload["country"]
         db.session.commit()
         return current_user.profile
 

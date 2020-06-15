@@ -13,6 +13,8 @@ def send_async_email(app, msg):
 def send_email(subject, recipients, text_body, html_body, cc=None, bcc=None, attachments=None):
     if current_app.config["DEBUG"] and config().test_email:
         recipients = [config().test_email]
+        cc = cc if cc else [config().test_email]
+        bcc = bcc if bcc else [config().test_email]
     msg = Message(subject, recipients=recipients, cc=cc, bcc=bcc)
     msg.body = text_body
     msg.html = html_body

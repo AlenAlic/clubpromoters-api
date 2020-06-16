@@ -101,11 +101,14 @@ def template(group, name):
             purchase = Purchase.query.first()
             if not purchase:
                 start_time = datetime.utcnow().replace(hour=22, minute=30)
+                usr = User("club@test.com")
+                usr.club = "Club"
                 party = Party()
                 party.party_id = 42
                 party.name = "Amazing party"
                 party.party_start_datetime = start_time
                 party.party_end_datetime = start_time + timedelta(hours=5)
+                party.club_owner = usr
                 tickets = 3
                 purchase = Purchase()
                 purchase.party = party

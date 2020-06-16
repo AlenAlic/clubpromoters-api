@@ -55,7 +55,7 @@ def index():
 @bp.route("/preview/<string:group>/<string:name>", methods=[GET])
 def preview(group, name):
     groups = [GROUP_ERROR, GROUP_AUTH, GROUP_PURCHASE, GROUP_INVOICES]
-    names = [NAME_TRACE, NAME_ACTIVATE_ACCOUNT, NAME_RESET_PASSWORD, NAME_PASSWORD_CHANGED, GROUP_PURCHASE,
+    names = [NAME_TRACE, NAME_ACTIVATE_ACCOUNT, NAME_RESET_PASSWORD, NAME_PASSWORD_CHANGED, NAME_PURCHASE,
              NAME_SEND_INVOICE]
     if group not in groups or name not in names:
         flash("Dit not find e-mail template.")

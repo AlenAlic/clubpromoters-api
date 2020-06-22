@@ -9,6 +9,7 @@ from weasyprint import HTML
 import os
 from models.configuration import config
 from models.user.constants import ACCESS_CLUB_OWNER, ACCESS_PROMOTER
+from utilities import datetime_browser
 
 
 class Invoice(db.Model, TrackModifications):
@@ -150,10 +151,13 @@ class Invoice(db.Model, TrackModifications):
             return sum([party.income_club_owner_commission for party in self.parties])
 
     @property
+    def delivery_datetime(self):
+        return self.date.replace(month=self.date.month - 1 or 12)
+
+    @property
     def delivery_date(self):
         locale.setlocale(locale.LC_ALL, self.language)
-        delivery_date = self.date.replace(month=self.date.month - 1 or 12)
-        delivery_date = delivery_date.strftime("%B %Y")
+        delivery_date = self.delivery_datetime.strftime("%B %Y")
         locale.setlocale(locale.LC_ALL, 'C')
         return delivery_date
 
@@ -176,9 +180,12 @@ class Invoice(db.Model, TrackModifications):
     def json(self):
         data = {
             "id": self.invoice_id,
+            "name": self.user.full_name if self.promoter_invoice else self.user.club,
             "filename": self.filename,
             "promoter_invoice": self.promoter_invoice,
             "sent": self.sent,
+            "delivery_datetime": datetime_browser(self.delivery_datetime),
+            "invoice_number": self.invoice_number,
             "user": {
                 "id": self.user.user_id,
                 "full_name": self.user.full_name,

@@ -739,3 +739,14 @@ class OrganizerAPIInvoicesSend(Resource):
             "users": commissions(last_month),
             "invoices": [i.json() for i in this_months_invoices(now)],
         }
+
+
+@api.route("/invoices/all")
+class OrganizerAPIInvoicesAll(Resource):
+
+    @api.response(200, "All invoices")
+    @login_required
+    @requires_access_level(ACCESS_ORGANIZER)
+    def get(self):
+        """All invoices"""
+        return [i.json() for i in Invoice.query.all()]

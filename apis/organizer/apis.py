@@ -533,6 +533,19 @@ class OrganizerAPIInactiveParties(Resource):
         return [p.json() for p in parties]
 
 
+@api.route("/active_parties")
+class OrganizerAPIActiveParties(Resource):
+
+    @api.response(200, "Parties")
+    @login_required
+    @requires_access_level(ACCESS_ORGANIZER)
+    def get(self):
+        """List of all active parties"""
+        parties = Party.query.filter(Party.is_active.is_(True), Party.party_end_datetime > datetime.utcnow())\
+            .order_by(Party.party_start_datetime).all()
+        return [p.json() for p in parties]
+
+
 @api.route("/activate_party/<int:party_id>")
 class OrganizerAPIActivateParty(Resource):
 

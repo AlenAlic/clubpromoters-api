@@ -13,6 +13,7 @@ from .admin import api as admin_api
 from .mollie import api as mollie_api
 from .organizer import api as organizer
 from .code import api as code
+from .invoices import api as invoices
 
 
 authorizations = {
@@ -35,6 +36,7 @@ api.add_namespace(club_owner)
 api.add_namespace(code)
 api.add_namespace(documents)
 api.add_namespace(hostess)
+api.add_namespace(invoices)
 api.add_namespace(mollie_api)
 api.add_namespace(organizer)
 api.add_namespace(ping)

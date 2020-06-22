@@ -174,7 +174,7 @@
             </table>
         </div>
         <div class="invoice-ending-line">
-            {{ lang[invoice.language]["footer_1"] }} <b>{{ invoice.total | cents_to_euro | euro_format }}</b> {{ lang[invoice.language]["footer_2"] }} <b>{{ invoice.due_date }}</b> {{ lang[invoice.language]["footer_3"] }} <b>{{ invoice.invoice_iban }}</b> {{ lang[invoice.language]["footer_4"] }} <b>{{ invoice.cp_legal_name }}</b> {{ lang[invoice.language]["footer_5"] }} <b>{{ invoice.invoice_number }}</b>
+            {{ lang[invoice.language]["footer_1"] }} <b>{{ invoice.total | cents_to_euro | euro_format }}</b> {{ lang[invoice.language]["footer_2"] }} <b>{{ invoice.due_date }}</b> {{ lang[invoice.language]["footer_3"] }} <b>{{ invoice.invoice_iban }}</b> {{ lang[invoice.language]["footer_4"] }} <b>{{ invoice.invoice_legal_name }}</b> {{ lang[invoice.language]["footer_5"] }} <b>{{ invoice.invoice_number }}</b>
         </div>
     </body>
 </html>

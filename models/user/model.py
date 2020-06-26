@@ -188,6 +188,7 @@ class User(UserMixin, Anonymous, db.Model, TrackModifications):
             "last_name": self.last_name,
             "full_name": self.full_name,
             "business_entity": self.business_entity,
+            "accepted_terms": self.accepted_terms,
             "iat": time(),
             "exp": time() + expires_in,
         }, current_app.config["SECRET_KEY"], algorithm="HS256").decode("utf-8")

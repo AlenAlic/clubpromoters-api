@@ -5,7 +5,7 @@ from models import login_required, requires_access_level, ACCESS_ORGANIZER, ACCE
     ACCESS_PROMOTER
 from models import User, Location, Code, Party, PartyFile, Purchase, Refund, Ticket, Invoice
 from models.party.constants import NORMAL
-from datetime import datetime
+from datetime import datetime, timedelta
 from models.configuration import config
 from .functions import parties_list, purchases_list, commissions, this_months_invoices
 from apis.auth.email import send_activation_email
@@ -20,6 +20,7 @@ import xlsxwriter
 from io import BytesIO
 import pyqrcode
 from models.invoice.functions import generate_serial_number
+from .constants import DAILY, WEEKLY, BIWEEKLY
 
 
 api = Namespace("organizer", description="Organizer")
@@ -457,6 +458,8 @@ class OrganizerAPICreateNewParty(Resource):
         "images": fields.List(fields.Integer(required=True)),
         "logo_id": fields.Integer(required=True),
         "interval": fields.Integer(required=True),
+        "repeats": fields.Integer(default=1),
+        "period": fields.String,
     }), validate=True)
     @api.response(200, "Code deactivated")
     @login_required
@@ -464,27 +467,37 @@ class OrganizerAPICreateNewParty(Resource):
     def post(self):
         """Create new party"""
         club_owner = User.query.filter(User.user_id == api.payload["user_id"]).first()
-        party = Party()
-        party.name = api.payload["name"]
-        party.location_id = api.payload["location_id"]
-        party.party_start_datetime = datetime_python(api.payload["start_date"])
-        party.party_end_datetime = datetime_python(api.payload["end_date"])
-        if "description" in api.payload:
-            party.description = api.payload["description"]
-        party.num_available_tickets = api.payload["number_of_tickets"]
-        party.ticket_price = euro_to_cents(api.payload["ticket_price"])
-        party.status = NORMAL
-        party.club_owner_commission = api.payload["club_owner_commission"]
-        party.club_owner = club_owner
-        party.promoter_commission = api.payload["promoter_commission"]
-        for idx, file_id in enumerate(api.payload["images"]):
-            party_file = PartyFile()
-            party_file.party = party
-            party_file.file_id = file_id
-            party_file.order = idx
-        party.logo_id = api.payload["logo_id"]
-        party.interval = api.payload["interval"]
-        db.session.add(party)
+        default_start_date = datetime_python(api.payload["start_date"])
+        default_end_date = datetime_python(api.payload["end_date"])
+        days = 0
+        if "period" in api.payload:
+            period = api.payload["period"]
+            days = 1 if period == DAILY else 7 if period == WEEKLY else 14 if period == BIWEEKLY else 0
+        for i in range(api.payload["repeats"]):
+            offset = timedelta(days=days) * i
+            start_date = default_start_date + offset
+            end_date = default_end_date + offset
+            party = Party()
+            party.name = api.payload["name"]
+            party.location_id = api.payload["location_id"]
+            party.party_start_datetime = start_date
+            party.party_end_datetime = end_date
+            if "description" in api.payload:
+                party.description = api.payload["description"]
+            party.num_available_tickets = api.payload["number_of_tickets"]
+            party.ticket_price = euro_to_cents(api.payload["ticket_price"])
+            party.status = NORMAL
+            party.club_owner_commission = api.payload["club_owner_commission"]
+            party.club_owner = club_owner
+            party.promoter_commission = api.payload["promoter_commission"]
+            for idx, file_id in enumerate(api.payload["images"]):
+                party_file = PartyFile()
+                party_file.party = party
+                party_file.file_id = file_id
+                party_file.order = idx
+            party.logo_id = api.payload["logo_id"]
+            party.interval = api.payload["interval"]
+            db.session.add(party)
         db.session.commit()
         return
 

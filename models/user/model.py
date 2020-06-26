@@ -17,7 +17,7 @@ from constants.mollie import STATUS_PAID
 from models.party import Party
 from models.purchase import Purchase
 from utilities import datetime_browser, cents_to_euro
-from models.invoice.constants import ENGLISH
+from models.invoice.constants import DUTCH
 
 
 class Anonymous(AnonymousUserMixin):
@@ -115,7 +115,7 @@ class User(UserMixin, Anonymous, db.Model, TrackModifications):
     invoice_kvk_number = db.Column(db.String(128))
     invoice_vat_number = db.Column(db.String(128))
     invoices = db.relationship("Invoice", back_populates='user')
-    invoice_language = db.Column(db.String(16), nullable=False, default=ENGLISH)
+    invoice_language = db.Column(db.String(16), nullable=False, default=DUTCH)
     language = db.Column(db.String(16), nullable=False, default=VUE_ENGLISH)
     accepted_terms = db.Column(db.Boolean, nullable=False, default=False)
 

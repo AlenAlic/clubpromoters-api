@@ -60,8 +60,7 @@ class Invoice(db.Model, TrackModifications):
         self.parties.extend(parties)
         self.serial_number = serial_number
         self.year = datetime.utcnow().year
-
-        self.invoice_vat = conf.invoice_vat
+        self.language = user.invoice_language
 
         self.cp_legal_name = conf.invoice_legal_name
         self.cp_street = conf.invoice_street
@@ -82,10 +81,12 @@ class Invoice(db.Model, TrackModifications):
         self.invoice_postal_code = user.postal_code
         self.invoice_postal_code_letters = user.postal_code_letters
         self.invoice_city = user.city
+        self.invoice_country = user.country
         self.invoice_phone_number = user.phone_number
         self.invoice_iban = user.iban
-        self.invoice_country = user.country
+
         if self.business_invoice:
+            self.invoice_vat = conf.invoice_vat
             self.invoice_kvk_number = user.invoice_kvk_number
             self.invoice_vat_number = user.invoice_vat_number
 

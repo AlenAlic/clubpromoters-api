@@ -207,6 +207,7 @@ class User(UserMixin, Anonymous, db.Model, TrackModifications):
             "postal_code": self.postal_code,
             "postal_code_letters": self.postal_code_letters,
             "city": self.city,
+            "country": self.country,
         }
         if self.is_club_owner:
             data.update({

@@ -1,6 +1,7 @@
 from .datetime import *
 from .http import *
 from .mollie import *
+from .languages import *
 
 
 UPLOAD_FOLDER = "uploads"

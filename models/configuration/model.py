@@ -36,6 +36,7 @@ class Configuration(db.Model, TrackModifications):
     invoice_iban = db.Column(db.String(30), nullable=False)
     invoice_vat = db.Column(db.Integer(), nullable=False, default=21)
     bookkeeping_program_email = db.Column(db.String(256), nullable=False)
+    max_party_repeats = db.Column(db.Integer(), nullable=False, default=14)
 
     def allowed_file_types(self):
         return self.allowed_image_types.split(",")
@@ -57,4 +58,5 @@ class Configuration(db.Model, TrackModifications):
             "terms": self.terms.url if self.terms else None,
             "minimum_promoter_commission": cents_to_euro(self.minimum_promoter_commission),
             "administration_costs": cents_to_euro(self.administration_costs),
+            "max_party_repeats": self.max_party_repeats,
         }

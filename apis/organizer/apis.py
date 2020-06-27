@@ -21,6 +21,7 @@ from io import BytesIO
 import pyqrcode
 from models.invoice.functions import generate_serial_number
 from .constants import DAILY, WEEKLY, BIWEEKLY
+from mollie.api.error import ResponseError
 
 
 api = Namespace("organizer", description="Organizer")
@@ -654,27 +655,27 @@ class OrganizerAPIRefund(Resource):
         payment = mollie_client.payments.get(mollie_id)
 
         if payment is not None:
-            ref = Refund()
-            ref.price = euro_to_cents(amount)
-            ref.purchase = purchase
-            db.session.add(ref)
-            db.session.commit()
-
             if payment.can_be_refunded() and 1.0 <= float(amount) <= float(payment.amount_remaining["value"]):
+                ref = Refund()
+                ref.price = euro_to_cents(amount)
+                ref.purchase = purchase
+                tickets = Ticket.query.filter(Ticket.ticket_id.in_(api.payload["tickets"])).all()
+                for ticket in tickets:
+                    ticket.refunded = True
                 data = {
                     "amount": {"value": mollie_value, "currency": "EUR"},
                     "description": f"test {datetime.utcnow().strftime('%d-%m-%Y %H:%M:%S')}"
                 }
-                r = mollie_client.payment_refunds.with_parent_id(mollie_id).create(data)
-                ref.mollie_refund_id = r["id"]
-                tickets = Ticket.query.filter(Ticket.ticket_id.in_(api.payload["tickets"])).all()
-                for ticket in tickets:
-                    ticket.refunded = True
-                db.session.commit()
-                return purchase.json()
+                try:
+                    r = mollie_client.payment_refunds.with_parent_id(mollie_id).create(data)
+                    ref.mollie_refund_id = r["id"]
+                    db.session.add(ref)
+                    db.session.commit()
+                    # TODO => Add refund receipt
+                    return purchase.json()
+                except ResponseError:
+                    return abort(409)
             else:
-                db.session.delete(ref)
-                db.session.commit()
                 return abort(400)
         return abort(404)
 

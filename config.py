@@ -45,6 +45,8 @@ class Config(object):
     # Mollie web hook url
     MOLLIE_WEB_HOOK_URL = os.environ.get('MOLLIE_WEB_HOOK_URL')
 
+    MAX_CONTENT_LENGTH = 25 * 1024 * 1024
+
 
 # MAIL SERVERS
 # python -m smtpd -n -c DebuggingServer localhost:8025

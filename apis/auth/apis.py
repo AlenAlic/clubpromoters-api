@@ -108,7 +108,7 @@ class AuthAPIResetPassword(Resource):
 
     @api.doc(security=None)
     @api.expect(api.model("ResetPassword", {
-        "new_password": fields.String(required=True),
+        "password": fields.String(required=True),
         "repeat_password": fields.String(required=True),
     }), validate=True)
     @api.response(200, "Password successfully reset")
@@ -118,8 +118,8 @@ class AuthAPIResetPassword(Resource):
         """Reset password"""
         u = User.verify_reset_password_token(token)
         if u is not None:
-            if check_password_requirements(api.payload["new_password"], api.payload["repeat_password"]):
-                u.set_password(api.payload["new_password"])
+            if check_password_requirements(api.payload["password"], api.payload["repeat_password"]):
+                u.set_password(api.payload["password"])
                 db.session.commit()
                 return
             return abort(400)

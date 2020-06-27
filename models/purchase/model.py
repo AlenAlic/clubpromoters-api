@@ -38,8 +38,8 @@ class Purchase(db.Model, TrackModifications):
     club_owner_commission = db.Column(db.Integer, nullable=False, default=0)
     administration_costs = db.Column(db.Integer, nullable=False, default=0)
     vat_percentage = db.Column(db.Integer, nullable=False, default=9)
-    receipt_path = db.Column(db.String(512), nullable=True)
-    tickets_path = db.Column(db.String(512), nullable=True)
+    receipt_path = db.Column(db.String(512), nullable=True, default="")
+    tickets_path = db.Column(db.String(512), nullable=True, default="")
     minimum_promoter_commission = db.Column(db.Integer, nullable=False, default=0)
 
     def __repr__(self):

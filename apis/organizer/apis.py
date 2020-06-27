@@ -257,7 +257,7 @@ class OrganizerAPICreateHostess(Resource):
         "first_name": fields.String(required=True),
         "last_name": fields.String(required=True),
         "commission": fields.Integer(required=True),
-        "code_id": fields.Integer(required=True),
+        "code_id": fields.Integer(),
     }), validate=True)
     @api.response(200, "Promoter created")
     @login_required

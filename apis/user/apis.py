@@ -80,6 +80,21 @@ class UserAPIAddress(Resource):
         return current_user.profile
 
 
+@api.route("/language")
+class UserAPIAddress(Resource):
+
+    @api.expect(api.model("Language", {
+        "language": fields.String(required=True),
+    }), validate=True)
+    @api.response(200, "Profile", profile)
+    @login_required
+    def patch(self):
+        """Update user language preference"""
+        current_user.language = api.payload["language"]
+        db.session.commit()
+        return current_user.profile
+
+
 @api.route("/assets/<int:user_id>")
 class UserAPIAssets(Resource):
 

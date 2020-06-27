@@ -187,6 +187,7 @@ class User(UserMixin, Anonymous, db.Model, TrackModifications):
             "first_name": self.first_name,
             "last_name": self.last_name,
             "full_name": self.full_name,
+            "language": self.language,
             "business_entity": self.business_entity,
             "accepted_terms": self.accepted_terms,
             "iat": time(),
@@ -209,6 +210,7 @@ class User(UserMixin, Anonymous, db.Model, TrackModifications):
             "postal_code_letters": self.postal_code_letters,
             "city": self.city,
             "country": self.country,
+            "language": self.language,
         }
         if self.is_club_owner:
             data.update({

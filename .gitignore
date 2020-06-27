@@ -29,6 +29,7 @@ yarn-error.log*
 /backend/static/uploads
 /backend/generated/invoices
 /backend/generated/receipts
+/backend/generated/tickets
 
 # Local overrides of the client side config.
 /public/config/development.json

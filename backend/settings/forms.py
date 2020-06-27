@@ -22,8 +22,7 @@ class SettingsForm(FlaskForm):
                                                  validators=[DataRequired(), NumberRange(0, 50)])
     default_promoter_commission = IntegerField("Default Promoter commission %",
                                                validators=[DataRequired(), NumberRange(0, 50)])
-    minimum_promoter_commission = FloatField("Minimum promoter commission €",
-                                             validators=[DataRequired(), NumberRange(0)])
+    minimum_promoter_commission = FloatField("Minimum promoter commission €",  validators=[NumberRange(0)])
     mollie_api_key = StringField("Mollie API key", validators=[DataRequired()])
     save_settings = SubmitField("Save changes")
 

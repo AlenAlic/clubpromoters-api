@@ -269,7 +269,8 @@ class OrganizerAPICreateHostess(Resource):
         account.first_name = api.payload["first_name"]
         account.last_name = api.payload["last_name"]
         account.commission = api.payload["commission"]
-        account.code = Code.query.filter(Code.code_id == api.payload["code_id"]).first()
+        if "code_id" in api.payload:
+            account.code = Code.query.filter(Code.code_id == api.payload["code_id"]).first()
         account.auth_code = activation_code()
         account.access = ACCESS_PROMOTER
         db.session.add(account)

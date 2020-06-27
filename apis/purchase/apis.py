@@ -1,11 +1,12 @@
 from flask_restx import Namespace, Resource, abort, fields
 from ext import db
 from models import Party, Ticket, Purchase
-from models import get_code_from_request, code_required
+from models import get_code_from_request, code_required, requires_access_level, login_required, ACCESS_ORGANIZER
 from flask import url_for, request, current_app, Response
 from mollie.api.client import Client
 from models.configuration import config
 from utilities import euro_to_cents
+from apis.mollie.email import send_receipt, send_purchased_tickets
 
 
 api = Namespace("purchase", description="Purchase")
@@ -106,6 +107,38 @@ class PurchaseAPIQRCode(Resource):
             resp = Response(content_type="image/png")
             resp.data = purchase.qr_code_image()
             return resp
+        return abort(404)
+
+
+@api.route("/resend_receipt/<int:purchase_id>")
+class PurchaseAPIResendReceipt(Resource):
+
+    @api.response(200, "Email sent")
+    @api.response(404, "Purchase not found")
+    @login_required
+    @requires_access_level(ACCESS_ORGANIZER)
+    def get(self, purchase_id):
+        """Resend receipt email"""
+        purchase = Purchase.query.filter(Purchase.purchase_id == purchase_id).first()
+        if purchase is not None:
+            send_receipt(purchase)
+            return
+        return abort(404)
+
+
+@api.route("/resend_tickets/<int:purchase_id>")
+class PurchaseAPIResendTickets(Resource):
+
+    @api.response(200, "Email sent")
+    @api.response(404, "Purchase not found")
+    @login_required
+    @requires_access_level(ACCESS_ORGANIZER)
+    def get(self, purchase_id):
+        """Resend tickets email"""
+        purchase = Purchase.query.filter(Purchase.purchase_id == purchase_id).first()
+        if purchase is not None:
+            send_purchased_tickets(purchase)
+            return
         return abort(404)
 
 

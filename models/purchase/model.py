@@ -157,6 +157,10 @@ class Purchase(db.Model, TrackModifications):
         self.receipt_path = path
 
     @property
+    def receipts_file_exists(self):
+        return os.path.exists(self.receipt_path)
+
+    @property
     def receipt_number(self):
         n = f"{self.purchase_id}"
         return f"{self.purchase_datetime.strftime('%Y%m')}{n.zfill(6)}"
@@ -192,6 +196,10 @@ class Purchase(db.Model, TrackModifications):
         HTML(string=render_template("tickets/ticket_template.html", purchase=self, conf=conf),
              base_url=request.base_url).write_pdf(path)
         self.tickets_path = path
+
+    @property
+    def tickets_file_exists(self):
+        return os.path.exists(self.tickets_path)
 
     # Organizer
     @property

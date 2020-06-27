@@ -20,7 +20,14 @@
             <h3 class="mb-4">View receipt from Purchase</h3>
             {{ receipt_form.hidden_tag() }}
             {{ forms.form_field(receipt_form.purchase) }}
-            {{ forms.form_field(receipt_form.view_receipt, class_="float-right") }}
+            <div class="mb-3">
+                {{ forms.form_field(receipt_form.view_tickets, class_="btn-info") }}
+                {{ forms.form_field(receipt_form.view_receipt, class_="float-right btn-info") }}
+            </div>
+            <div>
+                {{ forms.form_field(receipt_form.resend_tickets) }}
+                {{ forms.form_field(receipt_form.resend_receipt, class_="float-right") }}
+            </div>
         </form>
     </div>
 </div>

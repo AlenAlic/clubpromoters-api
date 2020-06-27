@@ -1,4 +1,3 @@
-from utilities import last_month_datetime
 from models import Party, Purchase, User, Invoice
 from sqlalchemy import func, or_
 from models.user.constants import ACCESS_CLUB_OWNER, ACCESS_PROMOTER
@@ -14,9 +13,9 @@ def parties_list(year, month):
 
 
 def purchases_list(year, month):
-    last_month = last_month_datetime(year, month)
-    purchase = Purchase.query.filter(func.month(Purchase.purchase_datetime) == func.month(last_month),
-                                     func.year(Purchase.purchase_datetime) == func.year(last_month)).all()
+    dt = datetime(year, month, 1)
+    purchase = Purchase.query.filter(func.month(Purchase.purchase_datetime) == func.month(dt),
+                                     func.year(Purchase.purchase_datetime) == func.year(dt)).all()
     return [p.json() for p in purchase]
 
 

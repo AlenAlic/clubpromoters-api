@@ -21,6 +21,7 @@ from io import BytesIO
 import pyqrcode
 from models.invoice.functions import generate_serial_number
 from .constants import DAILY, WEEKLY, BIWEEKLY
+from constants import STATUS_PAID
 from mollie.api.error import ResponseError
 
 
@@ -48,6 +49,7 @@ class OrganizerAPIDashboardGraphs(Resource):
         """Get this year's financial data"""
         now = datetime.utcnow()
         purchases = Purchase.query.filter(Purchase.purchase_datetime < datetime.utcnow(),
+                                          Purchase.status == STATUS_PAID,
                                           func.year(Purchase.purchase_datetime) == func.year(now)).all()
         months = []
         revenue = []
@@ -84,6 +86,7 @@ class OrganizerAPIDashboardThisMonth(Resource):
         """Get this month's financial data"""
         now = datetime.utcnow()
         purchases = Purchase.query.filter(Purchase.purchase_datetime < datetime.utcnow(),
+                                          Purchase.status == STATUS_PAID,
                                           func.year(Purchase.purchase_datetime) == func.year(now),
                                           func.month(Purchase.purchase_datetime) == func.month(now)).all()
         revenue = sum([p.price + p.administration_costs for p in purchases] if len(purchases) else [0])
@@ -108,6 +111,7 @@ class OrganizerAPIDashboardLastMonth(Resource):
         now = datetime.utcnow()
         last_month = now.replace(month=now.month - 1 or 12)
         purchases = Purchase.query.filter(Purchase.purchase_datetime < datetime.utcnow(),
+                                          Purchase.status == STATUS_PAID,
                                           func.year(Purchase.purchase_datetime) == func.year(now),
                                           func.month(Purchase.purchase_datetime) == func.month(last_month)).all()
         revenue = sum([p.price + p.administration_costs for p in purchases] if len(purchases) else [0])

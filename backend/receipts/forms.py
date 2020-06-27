@@ -18,8 +18,6 @@ class TestReceiptForm(FlaskForm):
     purchase = QuerySelectField("Purchase", validators=[DataRequired()])
     view_receipt = SubmitField("View receipt")
     view_tickets = SubmitField("View tickets")
-    resend_receipt = SubmitField("Resend receipt")
-    resend_tickets = SubmitField("Resend tickets")
 
 
 class ReceiptSettingsForm(FlaskForm):

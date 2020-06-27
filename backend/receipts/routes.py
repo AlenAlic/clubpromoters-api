@@ -6,7 +6,6 @@ from models.user.constants import ACCESS_ADMIN, ACCESS_ORGANIZER
 from constants import *
 from .forms import TestReceiptForm, ReceiptSettingsForm
 from ext import db
-from apis.mollie.email import send_receipt, send_purchased_tickets
 
 
 @bp.route("/", methods=[GET, POST])
@@ -35,13 +34,5 @@ def index():
             if receipt_form.view_tickets.name in request.form:
                 return send_from_directory(directory=current_app.tickets_folder, filename=p.tickets_file_name,
                                            mimetype="application/pdf", as_attachment=True, cache_timeout=0)
-            if receipt_form.resend_receipt.name in request.form:
-                send_receipt(p)
-                flash(f"Receipts sent to: {p.email}")
-                return redirect(url_for("receipts.index"))
-            if receipt_form.resend_tickets.name in request.form:
-                send_purchased_tickets(p)
-                flash(f"Tickets sent to: {p.email}")
-                return redirect(url_for("receipts.index"))
         return redirect(url_for("receipts.index"))
     return render_template("receipts/index.html", receipt_form=receipt_form, settings_form=settings_form)

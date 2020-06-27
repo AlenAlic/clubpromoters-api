@@ -99,7 +99,7 @@ class User(UserMixin, Anonymous, db.Model, TrackModifications):
     working = db.Column(db.Boolean, nullable=True, default=False)
     files = db.relationship("File", back_populates='user')
     locations = db.relationship("Location", back_populates='user')
-    minimum_promoter_commission = db.Column(db.Integer, nullable=False, default=100)
+    minimum_promoter_commission = db.Column(db.Integer, nullable=False, default=0)
     iban = db.Column(db.String(30), nullable=True)
     iban_verified = db.Column(db.Boolean, nullable=False, default=False)
     business_entity = db.Column(db.Boolean, nullable=False, default=False)

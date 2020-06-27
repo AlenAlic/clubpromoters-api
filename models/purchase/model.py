@@ -182,6 +182,17 @@ class Purchase(db.Model, TrackModifications):
         return self.price - self.receipt_price_no_vat + \
                self.administration_costs - self.administration_costs_no_vat
 
+    @property
+    def tickets_file_name(self):
+        return f"tickets.{self.purchase_id}.{self.receipt_number}.{self.receipt_reference}.pdf"
+
+    def generate_tickets(self):
+        conf = config()
+        path = os.path.join(current_app.tickets_folder, self.tickets_file_name)
+        HTML(string=render_template("tickets/ticket_template.html", purchase=self, conf=conf),
+             base_url=request.base_url).write_pdf(path)
+        self.tickets_path = path
+
     # Organizer
     @property
     def expenses_promoter_commissions(self):

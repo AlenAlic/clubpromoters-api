@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+    {% include "tickets/ticket_template_head.html" %}
+    <body>
+        <img style="float: left; width: 255px; height: 121px;" src="{{url_for('static', filename='ticket_logo.svg')}}" alt="logo" />
+        <div class="ticket-header">
+            <h2>Ticket</h2>
+            <h3>{{ purchase.created_at.strftime("%Y-%m-%d") }}</h3>
+        </div>
+        <div style="margin-top: 100px; text-align: center;">
+            <h1>TICKET INFO</h1>
+        </div>
+    </body>
+</html>

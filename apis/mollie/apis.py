@@ -4,7 +4,7 @@ from flask import request, abort
 from models import Purchase
 from mollie.api.client import Client
 from mollie.api.error import Error
-from .email import send_purchased_tickets
+from .email import send_purchased_tickets, send_receipt
 from constants.mollie import STATUS_PAID, STATUS_PENDING, STATUS_OPEN, STATUS_CANCELED
 from models.configuration import config
 
@@ -36,6 +36,9 @@ class MollieAPIWebhook(Resource):
                     db.session.commit()
                     purchase.generate_receipt()
                     db.session.commit()
+                    purchase.generate_tickets()
+                    db.session.commit()
+                    send_receipt(purchase)
                     send_purchased_tickets(purchase)
                     return STATUS_PAID
                 elif payment.is_pending():

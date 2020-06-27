@@ -1,0 +1,37 @@
+{% extends "email/base.html" %}
+
+{% if config.get("DEBUG") %}{% set scheme="http" %}{% else %}{% set scheme="https" %}{% endif %}
+
+{% block body %}
+<table style="width: 100%; max-width: 800px; border: 1px solid lightgrey; margin-left: auto; margin-right: auto;">
+    <tbody>
+        {% with title="Receipt" %}
+            {% include "email/snippets/header.html" %}
+        {% endwith %}
+        <tr class="table-main-body">
+            <td style="padding-bottom: 16px; text-align: center;">
+                <p>Dear {{ purchase.first_name }},</p>
+                <br/>
+                <p style="max-width: 480px; margin-left: auto; margin-right: auto;">
+                    Thank you for purchasing tickets to {{ purchase.party.name }}.
+                </p>
+                <p>
+                    {{ purchase.party.party_start_datetime.strftime("%d %B") }} {{ purchase.party.party_start_datetime.strftime("%H:%M") }}-{{ purchase.party.party_end_datetime.strftime("%H:%M") }}<br />
+                    {{ purchase.number_of_tickets }} tickets
+                </p>
+                <br />
+                <p style="max-width: 480px; margin-left: auto; margin-right: auto;">
+                    In the attachment you will find the receipt for this purchase.<br />Your tickets will be sent separately.
+                </p>
+                <p style="margin-top: 32px;">
+                    Would you like to attend more parties?
+                </p>
+                <p class="cta_wrapper">
+                    <a class="button--cta" href="{{ config.BASE_URL }}?code={{ purchase.code.code }}" target="_blank">Buy tickets</a>
+                </p>
+                {% include "email/snippets/closing.html" %}
+            </td>
+        </tr>
+    </tbody>
+</table>
+{% endblock %}

@@ -5,7 +5,6 @@ from models import requires_access_level
 from models.user.constants import ACCESS_ADMIN, ACCESS_ORGANIZER
 from constants import *
 from .forms import TestReceiptForm, ReceiptSettingsForm
-import os
 from ext import db
 
 

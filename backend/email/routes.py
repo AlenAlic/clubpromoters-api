@@ -15,6 +15,7 @@ NAME_RESET_PASSWORD = "reset_password"
 NAME_PASSWORD_CHANGED = "password_changed"
 GROUP_PURCHASE = "purchase"
 NAME_PURCHASE = "purchased_tickets"
+NAME_RECEIPT = "receipt"
 GROUP_INVOICES = "invoices"
 NAME_SEND_INVOICE = "send_invoice"
 
@@ -39,7 +40,8 @@ def index():
         {
             "group": GROUP_PURCHASE,
             "emails": {
-                NAME_PURCHASE: "Confirmed purchase",
+                NAME_PURCHASE: "Tickets",
+                NAME_RECEIPT: "Receipt",
             }
         },
         {
@@ -56,7 +58,7 @@ def index():
 def preview(group, name):
     groups = [GROUP_ERROR, GROUP_AUTH, GROUP_PURCHASE, GROUP_INVOICES]
     names = [NAME_TRACE, NAME_ACTIVATE_ACCOUNT, NAME_RESET_PASSWORD, NAME_PASSWORD_CHANGED, NAME_PURCHASE,
-             NAME_SEND_INVOICE]
+             NAME_RECEIPT, NAME_SEND_INVOICE]
     if group not in groups or name not in names:
         flash("Dit not find e-mail template.")
         return redirect(url_for("email.index"))
@@ -97,7 +99,7 @@ def template(group, name):
         if name == NAME_PASSWORD_CHANGED:
             return render_template(path)
     if group == GROUP_PURCHASE:
-        if name == NAME_PURCHASE:
+        if name == NAME_PURCHASE or name == NAME_RECEIPT:
             purchase = Purchase.query.first()
             if not purchase:
                 start_time = datetime.utcnow().replace(hour=22, minute=30)

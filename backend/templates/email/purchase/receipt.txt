@@ -7,8 +7,8 @@ Thank you for purchasing tickets to {{ purchase.party.name }}.
 {{ purchase.number_of_tickets }} tickets
 
 
-At the door, please show the following code:
-"{{ purchase.entrance_code() }}"
+In the attachment you will find the receipt for this purchase.
+Your tickets will be sent separately.
 
 
 Would you like to attend more parties?

@@ -94,6 +94,7 @@ def make_folders(app):
     app.uploads_folder = os.path.join(app.static_folder, UPLOAD_FOLDER)
     app.receipts_folder = os.path.join(generated_path, RECEIPTS_FOLDER)
     app.invoices_folder = os.path.join(generated_path, INVOICES_FOLDER)
+    app.tickets_folder = os.path.join(generated_path, TICKETS_FOLDER)
 
     # Uploads
     if not os.path.exists(app.uploads_folder):
@@ -104,3 +105,6 @@ def make_folders(app):
     # Invoices
     if not os.path.exists(app.invoices_folder):
         os.makedirs(app.invoices_folder)
+    # Tickets
+    if not os.path.exists(app.tickets_folder):
+        os.makedirs(app.tickets_folder)

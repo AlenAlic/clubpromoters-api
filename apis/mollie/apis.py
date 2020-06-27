@@ -39,9 +39,7 @@ class MollieAPIWebhook(Resource):
                     db.session.commit()
                     send_receipt(purchase)
                     send_purchased_tickets(purchase)
-                    return STATUS_PAID
-                else:
-                    return STATUS_PAID
+                return STATUS_PAID
             elif payment.is_pending():
                 # The payment has started but is not complete yet.
                 purchase.purchase_pending()

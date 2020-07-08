@@ -41,6 +41,7 @@ class Purchase(db.Model, TrackModifications):
     receipt_path = db.Column(db.String(512), nullable=True, default="")
     tickets_path = db.Column(db.String(512), nullable=True, default="")
     minimum_promoter_commission = db.Column(db.Integer, nullable=False, default=0)
+    entrance_code_randomised = db.Column(db.String(12), nullable=True, default=datetime.utcnow().microsecond)
 
     def __repr__(self):
         return f"Purchase {self.purchase_id} - Party: {self.party} - Tickets: {len(self.tickets)}"
@@ -101,7 +102,7 @@ class Purchase(db.Model, TrackModifications):
         return img.getvalue()
 
     def entrance_code(self):
-        return f"{ self.party_id }-{ self.purchase_id }"
+        return f"{ self.party_id }{ self.purchase_id }{ self.entrance_code_randomised }"
 
     def json(self):
         data = {

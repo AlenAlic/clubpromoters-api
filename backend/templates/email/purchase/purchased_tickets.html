@@ -13,20 +13,26 @@
                 <p>Dear {{ purchase.first_name }},</p>
                 <br/>
                 <p style="max-width: 480px; margin-left: auto; margin-right: auto;">
-                    Thank you for purchasing tickets to {{ purchase.party.name }}.
-                </p>
-                <p>
-                    {{ purchase.party.party_start_datetime.strftime("%d %B") }} {{ purchase.party.party_start_datetime.strftime("%H:%M") }}-{{ purchase.party.party_end_datetime.strftime("%H:%M") }}<br />
-                    {{ purchase.number_of_tickets }} tickets
+                    Thank you for purchasing tickets to <b>{{ purchase.party.name }}</b>.<br />
+                    <b>{{ purchase.party.party_start_datetime.strftime("%d %B") }} {{ purchase.party.party_start_datetime.strftime("%H:%M") }}-{{ purchase.party.party_end_datetime.strftime("%H:%M") }}<br />
+                        {{ purchase.party.location.address }}<br />
+                        {{ purchase.party.location.full_postal_code }} {{ purchase.party.location.city }}
+                    </b>
                 </p>
                 <p style="max-width: 480px; margin-left: auto; margin-right: auto;">
-                    At the door, please show this QR code to the hostess to enter the venue.
+                    At the door, please show this QR code to the hostess to enter the venue.<br />
+                    The code is valid for <b>{{ purchase.number_of_tickets }} tickets</b>.
                 </p>
                 <img src="{{ url_for('api.purchase_purchase_apiqr_code', _scheme=scheme, _external=True, purchase_hash=purchase.hash) }}" alt="QR code">
                 <p style="max-width: 480px; margin-left: auto; margin-right: auto;">
                     Alternatively, you show the following code:<br />
-                    "{{ purchase.entrance_code() }}"
+                    <b>{{ purchase.entrance_code() }}</b>
                 </p>
+                {% if purchase.number_of_tickets > 1 %}
+                <p style="margin-top: 32px;">
+                    If you're attending separately, you  can forward this email to your fellow guests.
+                </p>
+                {% endif %}
                 <p style="margin-top: 32px;">
                     Would you like to attend more parties?
                 </p>

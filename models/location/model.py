@@ -35,3 +35,11 @@ class Location(db.Model, TrackModifications):
             "user_id": self.user_id,
         }
         return data
+
+    @property
+    def address(self):
+        return f"{self.street} {self.street_number}{self.street_number_addition}"
+
+    @property
+    def full_postal_code(self):
+        return f"{self.postal_code} {self.postal_code_letters}"

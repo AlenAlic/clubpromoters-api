@@ -211,6 +211,7 @@ class User(UserMixin, Anonymous, db.Model, TrackModifications):
             "city": self.city,
             "country": self.country,
             "language": self.language,
+            "invoice_language": self.invoice_language,
         }
         if self.is_club_owner:
             data.update({

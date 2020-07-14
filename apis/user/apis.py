@@ -95,6 +95,21 @@ class UserAPIAddress(Resource):
         return current_user.profile
 
 
+@api.route("/invoice_language")
+class UserAPIAddress(Resource):
+
+    @api.expect(api.model("InvoiceLanguage", {
+        "invoice_language": fields.String(required=True),
+    }), validate=True)
+    @api.response(200, "Profile", profile)
+    @login_required
+    def patch(self):
+        """Update user language preference"""
+        current_user.invoice_language = api.payload["invoice_language"]
+        db.session.commit()
+        return current_user.profile
+
+
 @api.route("/assets/<int:user_id>")
 class UserAPIAssets(Resource):
 

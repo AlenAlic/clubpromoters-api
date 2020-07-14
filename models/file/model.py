@@ -1,8 +1,11 @@
 from ext import db
-from models.tables import TABLE_FILE, TABLE_USERS
+from models.tables import TABLE_FILE, TABLE_USERS, TABLE_PARTY_FILES
 from models import TrackModifications
 from flask import current_app, request
 import urllib.parse
+from sqlalchemy.ext.associationproxy import association_proxy
+import os
+import contextlib
 
 
 class File(db.Model, TrackModifications):
@@ -13,6 +16,7 @@ class File(db.Model, TrackModifications):
     logo = db.Column(db.Boolean, nullable=False, default=False)
     user_id = db.Column(db.Integer, db.ForeignKey(f"{TABLE_USERS}.user_id"))
     user = db.relationship("User", back_populates="files")
+    parties = association_proxy(TABLE_PARTY_FILES, "party")
 
     def __repr__(self):
         return f"{self.file_id}: {self.name}"
@@ -33,6 +37,18 @@ class File(db.Model, TrackModifications):
         url = f"{scheme}://{request.host}{relative_url}"
         return urllib.parse.quote(url, safe="/:")
 
+    @property
+    def deletable(self):
+        if not self.logo:
+            return len(self.parties) == 0
+        else:
+            from models.party import Party
+            return len(Party.query.filter(Party.logo == self).all()) == 0
+
+    def remove_from_disk(self):
+        with contextlib.suppress(FileNotFoundError):
+            os.remove(self.path)
+
     def json(self):
         data = {
             "id": self.file_id,
@@ -40,5 +56,6 @@ class File(db.Model, TrackModifications):
             "name": self.name,
             "logo": self.logo,
             "user_id": self.user_id,
+            "deletable": self.deletable,
         }
         return data

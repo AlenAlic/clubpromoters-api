@@ -30,15 +30,19 @@ class ReceiptSettingsForm(FlaskForm):
             self.vat.data = conf.vat
             self.receipt_title.data = conf.receipt_title
             self.receipt_address.data = conf.receipt_address
+            self.receipt_city.data = conf.receipt_city
             self.receipt_country.data = conf.receipt_country
             self.receipt_phone.data = conf.receipt_phone
+            self.receipt_email.data = conf.receipt_email
 
     administration_costs = FloatField("Administration costs €", validators=[DataRequired(), NumberRange(0)])
     vat = IntegerField("VAT percentage", validators=[DataRequired()])
     receipt_title = StringField("Company name (or website)", validators=[DataRequired()])
     receipt_address = StringField("Address", validators=[DataRequired()])
+    receipt_city = StringField("City", validators=[DataRequired()])
     receipt_country = StringField("Country", validators=[DataRequired()])
-    receipt_phone = StringField("Phone number", validators=[DataRequired()])
+    receipt_phone = StringField("Phone number")
+    receipt_email = StringField("E-mail", validators=[DataRequired()])
     save_changes = SubmitField("Save changes")
 
     def save(self):
@@ -47,5 +51,7 @@ class ReceiptSettingsForm(FlaskForm):
         conf.vat = self.vat.data
         conf.receipt_title = self.receipt_title.data
         conf.receipt_address = self.receipt_address.data
+        conf.receipt_city = self.receipt_city.data
         conf.receipt_country = self.receipt_country.data
         conf.receipt_phone = self.receipt_phone.data
+        conf.receipt_email = self.receipt_email.data

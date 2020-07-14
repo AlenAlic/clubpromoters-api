@@ -6,6 +6,8 @@ from models.user.constants import ACCESS_ADMIN, ACCESS_ORGANIZER
 from constants import *
 from .forms import TestReceiptForm, ReceiptSettingsForm
 from ext import db
+from models import Purchase
+from models.configuration import config
 
 
 @bp.route("/", methods=[GET, POST])
@@ -36,3 +38,14 @@ def index():
                                            mimetype="application/pdf", as_attachment=True, cache_timeout=0)
         return redirect(url_for("receipts.index"))
     return render_template("receipts/index.html", receipt_form=receipt_form, settings_form=settings_form)
+
+
+@bp.route("/<int:purchase_id>", methods=[GET])
+@login_required
+@requires_access_level(ACCESS_ADMIN, ACCESS_ORGANIZER)
+def purchase_nr(purchase_id):
+    purchase = Purchase.query.filter(Purchase.purchase_id == purchase_id).first()
+    if purchase:
+        return render_template("receipts/receipt_template.html", purchase=purchase, conf=config())
+    flash("Purchase not found")
+    return redirect(url_for("receipt.index"))

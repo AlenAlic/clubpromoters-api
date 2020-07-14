@@ -43,3 +43,14 @@ class TermsForm(FlaskForm):
 class RemoveTermsForm(FlaskForm):
 
     remove_terms = SubmitField("Remove terms")
+
+
+class PromoterTermsForm(FlaskForm):
+
+    promoter_terms = FileField("Promoter terms and conditions", validators=[DataRequired()])
+    promoter_upload_terms = SubmitField("Upload promoter terms")
+
+
+class RemovePromoterTermsForm(FlaskForm):
+
+    promoter_remove_terms = SubmitField("Remove promoter terms")

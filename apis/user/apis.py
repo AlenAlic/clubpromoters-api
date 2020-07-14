@@ -6,6 +6,8 @@ from models import login_required, requires_access_level
 from models import User
 from models.user.constants import ACCESS_ORGANIZER, ACCESS_CLUB_OWNER
 from utilities import upload_image
+from constants import VUE_LANGUAGES, VUE_ENGLISH
+from models.invoice.constants import INVOICE_LANGUAGES, DUTCH
 
 
 api = Namespace("user", description="User")
@@ -90,7 +92,10 @@ class UserAPIAddress(Resource):
     @login_required
     def patch(self):
         """Update user language preference"""
-        current_user.language = api.payload["language"]
+        if api.payload["language"] in VUE_LANGUAGES:
+            current_user.language = api.payload["language"]
+        else:
+            current_user.language = VUE_ENGLISH
         db.session.commit()
         return current_user.profile
 
@@ -105,7 +110,10 @@ class UserAPIAddress(Resource):
     @login_required
     def patch(self):
         """Update user language preference"""
-        current_user.invoice_language = api.payload["invoice_language"]
+        if api.payload["invoice_language"] in INVOICE_LANGUAGES:
+            current_user.invoice_language = api.payload["invoice_language"]
+        else:
+            current_user.invoice_language = DUTCH
         db.session.commit()
         return current_user.profile
 

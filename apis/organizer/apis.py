@@ -692,8 +692,7 @@ class OrganizerAPICommissions(Resource):
     @requires_access_level(ACCESS_ORGANIZER)
     def get(self, year, month):
         """List of commissions for a given month for all users"""
-        last_month = last_month_datetime(year, month)
-        return commissions(last_month, filter_users=False)
+        return commissions(datetime(year, month, 1), filter_users=False)
 
 
 @api.route("/invoices")

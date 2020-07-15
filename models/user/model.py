@@ -299,6 +299,7 @@ class User(UserMixin, Anonymous, db.Model, TrackModifications):
         if self.is_promoter:
             data.update({
                 "commission": self.commission,
+                "minimum_promoter_commission": cents_to_euro(self.minimum_promoter_commission),
                 "iban": self.iban,
                 "business_entity": self.business_entity,
                 "invoice_legal_name": self.invoice_legal_name,

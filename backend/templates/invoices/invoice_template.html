@@ -1,6 +1,7 @@
 {% set lang = {
 "nl_NL": {
     "header": "Factuur uitgereikt door afnemer:",
+    "header_receipt": "Kwitantie uitgereikt door afnemer:",
     "kvk": "KvK",
     "iban": "IBAN",
     "invoice_nr": "Factuurnummer",
@@ -24,6 +25,7 @@
 },
 "en_US": {
     "header": "Invoice issued by client:",
+    "header_receipt": "Receipt issued by client:",
     "kvk": "CoC",
     "iban": "IBAN",
     "invoice_nr": "Invoice number",
@@ -53,7 +55,13 @@
     <body style="margin: 0 auto; max-width: 1200px">
         <img style="float: right; width: 255px; height: 121px;" src="{{url_for('static', filename='invoice_logo.svg')}}" alt="logo" />
         <div class="invoice-header">
-            <div>{{ lang[invoice.language]["header"] }}</div>
+            <div>
+                {% if invoice.business_invoice %}
+                {{ lang[invoice.language]["header"] }}
+                {% else %}
+                {{ lang[invoice.language]["header_receipt"] }}
+                {% endif %}
+            </div>
             <div>
                 <b>{{ invoice.cp_legal_name }}</b>
             </div>

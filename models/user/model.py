@@ -195,6 +195,24 @@ class User(UserMixin, Anonymous, db.Model, TrackModifications):
         }, current_app.config["SECRET_KEY"], algorithm="HS256").decode("utf-8")
 
     @property
+    def invoice_data_complete(self):
+        data = [
+            self.invoice_legal_name,
+            self.street,
+            self.street_number,
+            self.postal_code,
+            self.postal_code_letters,
+            self.city,
+            self.iban,
+        ]
+        if self.business_entity:
+            data.extend([
+                self.invoice_kvk_number,
+                self.invoice_vat_number,
+            ])
+        return all([bool(f) for f in data])
+
+    @property
     def profile(self):
         data = {
             "id": self.user_id,
@@ -212,6 +230,7 @@ class User(UserMixin, Anonymous, db.Model, TrackModifications):
             "country": self.country,
             "language": self.language,
             "invoice_language": self.invoice_language,
+            "invoice_data_complete": self.invoice_data_complete,
         }
         if self.is_club_owner:
             data.update({

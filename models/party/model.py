@@ -127,13 +127,13 @@ class Party(db.Model, TrackModifications):
             "start_date": datetime_browser(self.party_start_datetime),
             "end_date": datetime_browser(self.party_end_datetime),
             "number_of_sold_tickets": sum([
-                p.number_of_sold_tickets for p in self.purchases if p.promoter == user
+                p.number_of_sold_tickets for p in self.paid_purchases if p.promoter == user
             ]),
             "number_of_refunded_tickets": sum([
-                p.number_of_refunded_tickets for p in self.purchases if p.promoter == user
+                p.number_of_refunded_tickets for p in self.paid_purchases if p.promoter == user
             ]),
             "commission": sum([
-                cents_to_euro(p.expenses_promoter_commissions) for p in self.purchases if p.promoter == user
+                cents_to_euro(p.expenses_promoter_commissions) for p in self.paid_purchases if p.promoter == user
             ]),
         }
         return data

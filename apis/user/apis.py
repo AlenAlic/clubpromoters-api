@@ -100,6 +100,29 @@ class UserAPIAddress(Resource):
         return current_user.profile
 
 
+@api.route("/invoice_data")
+class UserAPIAddress(Resource):
+
+    @api.expect(api.model("InvoiceData", {
+        "legal_name": fields.String(required=True),
+        "iban": fields.String(required=True),
+        "kvk_number": fields.String(),
+        "vat_number": fields.String(),
+    }), validate=True)
+    @api.response(200, "Profile", profile)
+    @login_required
+    def patch(self):
+        """Update user invoice data"""
+        current_user.invoice_legal_name = api.payload["legal_name"]
+        current_user.iban = api.payload["iban"]
+        if "kvk_number" in api.payload:
+            current_user.invoice_kvk_number = api.payload["kvk_number"]
+        if "vat_number" in api.payload:
+            current_user.invoice_vat_number = api.payload["vat_number"]
+        db.session.commit()
+        return current_user.profile
+
+
 @api.route("/invoice_language")
 class UserAPIAddress(Resource):
 

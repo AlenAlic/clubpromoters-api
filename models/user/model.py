@@ -188,7 +188,7 @@ class User(UserMixin, Anonymous, db.Model, TrackModifications):
             "last_name": self.last_name,
             "full_name": self.full_name,
             "language": self.language,
-            "business_entity": self.business_entity,
+            "business_entity": self.business_entity or self.is_club_owner,
             "accepted_terms": self.accepted_terms,
             "iat": time(),
             "exp": time() + expires_in,

@@ -14,7 +14,8 @@
                 <br/>
                 <p style="max-width: 480px; margin-left: auto; margin-right: auto;">
                     Thank you for purchasing tickets to <b>{{ purchase.party.name }}</b>.<br />
-                    <b>{{ purchase.party.party_start_datetime.strftime("%d %B") }} {{ purchase.party.party_start_datetime.strftime("%H:%M") }}-{{ purchase.party.party_end_datetime.strftime("%H:%M") }}<br />
+                    <b>
+                        {{ purchase.party.party_start_datetime.strftime("%d %B") }} {{ purchase.party.party_start_datetime.strftime("%H:%M") }}-{{ purchase.party.party_end_datetime.strftime("%H:%M") }}<br />
                         {{ purchase.party.location.address }}<br />
                         {{ purchase.party.location.full_postal_code }} {{ purchase.party.location.city }}
                     </b>

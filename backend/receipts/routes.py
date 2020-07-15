@@ -6,7 +6,7 @@ from models.user.constants import ACCESS_ADMIN, ACCESS_ORGANIZER
 from constants import *
 from .forms import TestReceiptForm, ReceiptSettingsForm
 from ext import db
-from models import Purchase
+from models import Purchase, Refund
 from models.configuration import config
 
 
@@ -48,4 +48,15 @@ def purchase_nr(purchase_id):
     if purchase:
         return render_template("receipts/receipt_template.html", purchase=purchase, conf=config())
     flash("Purchase not found")
+    return redirect(url_for("receipt.index"))
+
+
+@bp.route("/<int:refund_id>/refund", methods=[GET])
+@login_required
+@requires_access_level(ACCESS_ADMIN, ACCESS_ORGANIZER)
+def refund_nr(refund_id):
+    refund = Refund.query.filter(Refund.refund_id == refund_id).first()
+    if refund:
+        return render_template("receipts/receipt_template.html", purchase=refund.purchase, conf=config(), refund=refund)
+    flash("Refund not found")
     return redirect(url_for("receipt.index"))

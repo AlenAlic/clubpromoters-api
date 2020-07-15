@@ -202,6 +202,24 @@ class Purchase(db.Model, TrackModifications):
     def tickets_file_exists(self):
         return os.path.exists(self.tickets_path)
 
+    def refund_price(self, refund):
+        if len(self.refunds) > 0:
+            return sum([r.price for r in self.previous_refunds(refund)])
+        return 0
+
+    def refund_price_no_vat(self, refund):
+        if len(self.refunds) > 0:
+            return sum([r.refund_price_no_vat for r in self.previous_refunds(refund)])
+        return 0
+
+    def refund_vat(self, refund):
+        if len(self.refunds) > 0:
+            return sum([r.refund_vat for r in self.previous_refunds(refund)])
+        return 0
+
+    def previous_refunds(self, refund):
+        return [r for r in self.refunds if r.refund_id <= refund.refund_id]
+
     # Organizer
     @property
     def expenses_promoter_commissions(self):

@@ -6,7 +6,13 @@
         <div class="receipt-header">
             <h2>Receipt</h2>
             <h3>{{ purchase.created_at.strftime("%Y-%m-%d") }}</h3>
-            <h4>{{ purchase.receipt_number }}</h4>
+            <h4>
+                {% if refund is defined %}
+                    {{ refund.receipt_number }}
+                {% else %}
+                    {{ purchase.receipt_number }}
+                {% endif %}
+            </h4>
             <h5>{{ purchase.receipt_reference }}</h5>
         </div>
         <div class="receipt-address">
@@ -31,7 +37,13 @@
                 </thead>
                 <tbody>
                 <tr>
-                    <td>{{ purchase.receipt_number }}</td>
+                    <td>
+                        {% if refund is defined %}
+                            {{ refund.receipt_number }}
+                        {% else %}
+                            {{ purchase.receipt_number }}
+                        {% endif %}
+                    </td>
                     <td>{{ purchase.created_at.strftime("%Y-%m-%d") }}</td>
                     <td>{{ purchase.receipt_reference }}</td>
                 </tr>
@@ -53,8 +65,19 @@
                     <td>{{ purchase.vat_percentage }}%</td>
                     <td>{{ purchase.receipt_ticket_price_no_vat | cents_to_euro | euro_format }}</td>
                     <td>{{ purchase.number_of_tickets }}</td>
-                    <td>{{ purchase.receipt_price_no_vat | cents_to_euro| euro_format }}</td>
+                    <td>{{ purchase.receipt_price_no_vat | cents_to_euro | euro_format }}</td>
                 </tr>
+                {% if refund is defined %}
+                    {% for r in purchase.previous_refunds(refund) %}
+                    <tr>
+                        <td>Refund {{ r.refund_datetime.strftime("%Y-%m-%d") }}</td>
+                        <td>{{ purchase.vat_percentage }}%</td>
+                        <td>-{{ r.refund_price_no_vat | cents_to_euro | euro_format }}</td>
+                        <td>1</td>
+                        <td>-{{ r.refund_price_no_vat | cents_to_euro | euro_format }}</td>
+                    </tr>
+                    {% endfor %}
+                {% endif %}
                 </tbody>
             </table>
             <table class="receipt-table receipt-summary">
@@ -62,30 +85,39 @@
                 <tr>
                     <th></th>
                     <th>Total products</th>
-                    <td>{{ purchase.receipt_price_no_vat | cents_to_euro| euro_format }}</td>
+                    <td>{{ (purchase.receipt_price_no_vat - purchase.refund_price_no_vat(refund)) | cents_to_euro | euro_format }}</td>
                 </tr>
                 <tr>
                     <th></th>
                     <th>Administrative costs</th>
-                    <td>{{ purchase.administration_costs_no_vat | cents_to_euro| euro_format }}</td>
+                    <td>{{ purchase.administration_costs_no_vat | cents_to_euro | euro_format }}</td>
                 </tr>
                 <tr>
                     <th></th>
                     <th>Total (ex. VAT)</th>
-                    <td>{{ (purchase.administration_costs_no_vat + purchase.receipt_price_no_vat) | cents_to_euro| euro_format }}</td>
+                    <td>{{ (purchase.administration_costs_no_vat + purchase.receipt_price_no_vat - purchase.refund_price_no_vat(refund)) | cents_to_euro | euro_format }}</td>
                 </tr>
                 <tr>
                     <th></th>
                     <th>Total VAT</th>
-                    <td>{{ purchase.vat | cents_to_euro | euro_format }}</td>
+                    <td>{{ (purchase.vat - purchase.refund_vat(refund)) | cents_to_euro | euro_format }}</td>
                 </tr>
                 <tr class="receipt-total">
                     <th></th>
                     <th style="text-align: right;" class="receipt-total__border">Total</th>
-                    <th class="receipt-total__border">{{ (purchase.price + purchase.administration_costs) | cents_to_euro | euro_format }}</th>
+                    <th class="receipt-total__border">{{ (purchase.price + purchase.administration_costs - purchase.refund_price(refund)) | cents_to_euro | euro_format }}</th>
                 </tr>
                 </tbody>
             </table>
+        </div>
+        <div class="receipt-footer">
+        {% if refund is defined %}
+            {% if purchase.refunds | length == 1 %}
+                <div>This is a refund receipt, which automatically invalidates the original receipt.</div>
+            {% else %}
+                <div>This is a refund receipt, which automatically invalidates the previous receipts.</div>
+            {% endif %}
+        {% endif %}
         </div>
     </body>
 </html>

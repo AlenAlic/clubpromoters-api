@@ -23,6 +23,7 @@ from models.invoice.functions import generate_serial_number
 from .constants import DAILY, WEEKLY, BIWEEKLY
 from constants import STATUS_PAID
 from mollie.api.error import ResponseError
+from .email import send_refund_receipt
 
 
 api = Namespace("organizer", description="Organizer")
@@ -675,7 +676,9 @@ class OrganizerAPIRefund(Resource):
                     ref.mollie_refund_id = r["id"]
                     db.session.add(ref)
                     db.session.commit()
-                    # TODO => Add refund receipt
+                    ref.generate_refund_receipt()
+                    db.session.commit()
+                    send_refund_receipt(ref)
                     return purchase.json()
                 except ResponseError:
                     return abort(409)

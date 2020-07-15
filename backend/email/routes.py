@@ -2,9 +2,9 @@ from flask import render_template, redirect, url_for, flash
 from backend.email import bp
 from constants import GET
 from mailing.util import filtered_form
-from models import User, Purchase, Ticket, Party, Invoice
+from models import User, Purchase, Party, Invoice
 from utilities import activation_code
-from datetime import datetime, timedelta
+from .functions import generate_dummy_purchase
 
 
 GROUP_ERROR = "error"
@@ -16,6 +16,7 @@ NAME_PASSWORD_CHANGED = "password_changed"
 GROUP_PURCHASE = "purchase"
 NAME_PURCHASE = "purchased_tickets"
 NAME_RECEIPT = "receipt"
+NAME_REFUND = "refund_receipt"
 GROUP_INVOICES = "invoices"
 NAME_SEND_INVOICE = "send_invoice"
 
@@ -42,6 +43,7 @@ def index():
             "emails": {
                 NAME_PURCHASE: "Tickets",
                 NAME_RECEIPT: "Receipt",
+                NAME_REFUND: "Refund receipt",
             }
         },
         {
@@ -58,7 +60,7 @@ def index():
 def preview(group, name):
     groups = [GROUP_ERROR, GROUP_AUTH, GROUP_PURCHASE, GROUP_INVOICES]
     names = [NAME_TRACE, NAME_ACTIVATE_ACCOUNT, NAME_RESET_PASSWORD, NAME_PASSWORD_CHANGED, NAME_PURCHASE,
-             NAME_RECEIPT, NAME_SEND_INVOICE]
+             NAME_RECEIPT, NAME_REFUND, NAME_SEND_INVOICE]
     if group not in groups or name not in names:
         flash("Dit not find e-mail template.")
         return redirect(url_for("email.index"))
@@ -102,33 +104,13 @@ def template(group, name):
         if name == NAME_PURCHASE or name == NAME_RECEIPT:
             purchase = Purchase.query.first()
             if not purchase:
-                start_time = datetime.utcnow().replace(hour=22, minute=30)
-                usr = User("club@test.com")
-                usr.club = "Club"
-                party = Party()
-                party.party_id = 42
-                party.name = "Amazing party"
-                party.party_start_datetime = start_time
-                party.party_end_datetime = start_time + timedelta(hours=5)
-                party.club_owner = usr
-                tickets = 3
-                purchase = Purchase()
-                purchase.party = party
-                purchase.party_id = party.party_id
-                purchase.purchase_id = 10
-                purchase.ticket_price = 2500
-                purchase.price = purchase.ticket_price * tickets
-                purchase.first_name = "Charlie"
-                purchase.last_name = "Brown"
-                purchase.email = "c.brown@example.com"
-                purchase.mollie_payment_id = "tr_mollieID123"
-                purchase.purchase_datetime = datetime.utcnow()
-                purchase.hash = purchase.set_hash()
-                for i in range(tickets):
-                    ticket = Ticket()
-                    ticket.number = i + 1
-                    purchase.tickets.append(ticket)
+                purchase = generate_dummy_purchase()
             return render_template(path, purchase=purchase)
+        if name == NAME_REFUND:
+            purchase = Purchase.query.first()
+            if not purchase:
+                purchase = generate_dummy_purchase()
+            return render_template(path, refund=purchase.refunds[0])
     if group == GROUP_INVOICES:
         if name == NAME_SEND_INVOICE:
             invoice = Invoice.query.first()

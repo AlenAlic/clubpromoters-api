@@ -301,6 +301,25 @@ class OrganizerAPIUpdateUserCommission(Resource):
         return
 
 
+@api.route("/update_minimum_promoter_commission")
+class OrganizerAPIUpdateUserMinimumCommission(Resource):
+
+    @api.expect(api.model("UpdateMinimumUserCommission", {
+        "user_id": fields.Integer(required=True),
+        "minimum_commission": fields.Float(required=True),
+    }), validate=True)
+    @api.response(200, "User minimum commission updated")
+    @login_required
+    @requires_access_level(ACCESS_ORGANIZER)
+    def patch(self):
+        """Update the minimum commission of a promoter"""
+        account = User.query.filter(User.user_id == api.payload["user_id"]).first()
+        if account.is_promoter:
+            account.minimum_promoter_commission = euro_to_cents(api.payload["minimum_commission"])
+            db.session.commit()
+        return
+
+
 @api.route("/users")
 class OrganizerAPIUsers(Resource):
 

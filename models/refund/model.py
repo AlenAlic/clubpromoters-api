@@ -19,6 +19,7 @@ class Refund(db.Model, TrackModifications):
     mollie_refund_id = db.Column(db.String(128), nullable=False, default="")
     receipt_path = db.Column(db.String(512), nullable=True, default="")
     refund_number = db.Column(db.Integer, nullable=False, default=1)
+    tickets = db.relationship('Ticket', back_populates='refund')
 
     def __repr__(self):
         return f"{self.refund_id}: {self.mollie_refund_id}"

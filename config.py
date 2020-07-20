@@ -9,7 +9,7 @@ load_dotenv(os.path.join(basedir, '.env'))
 
 class Config(object):
 
-    ENV = os.environ.get('ENV') or 'development'
+    ENV = os.environ.get('ENV') or 'production'
     DEBUG = os.environ.get('DEBUG') == "True" or False
 
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'secret-key'

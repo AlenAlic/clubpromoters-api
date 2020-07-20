@@ -683,9 +683,6 @@ class OrganizerAPIRefund(Resource):
                 ref = Refund()
                 ref.price = euro_to_cents(amount)
                 ref.purchase = purchase
-                tickets = Ticket.query.filter(Ticket.ticket_id.in_(api.payload["tickets"])).all()
-                for ticket in tickets:
-                    ticket.refunded = True
                 data = {
                     "amount": {"value": mollie_value, "currency": "EUR"},
                     "description": f"test {datetime.utcnow().strftime('%d-%m-%Y %H:%M:%S')}"
@@ -694,6 +691,9 @@ class OrganizerAPIRefund(Resource):
                     r = mollie_client.payment_refunds.with_parent_id(mollie_id).create(data)
                     ref.mollie_refund_id = r["id"]
                     db.session.add(ref)
+                    tickets = Ticket.query.filter(Ticket.ticket_id.in_(api.payload["tickets"])).all()
+                    for ticket in tickets:
+                        ticket.refund = ref
                     db.session.commit()
                     ref.generate_refund_receipt()
                     db.session.commit()

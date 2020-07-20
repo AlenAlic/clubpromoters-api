@@ -18,9 +18,9 @@
         {% include "_dashboard_page.html" %}
     {% endwith %}
     {% if config.get("DEBUG") %}
-    {% with url=url_for("testing.index"), title="Testing", image="testing.png" %}
-        {% include "_dashboard_page.html" %}
-    {% endwith %}
+        {% with url=url_for("testing.index"), title="Testing", image="testing.png" %}
+            {% include "_dashboard_page.html" %}
+        {% endwith %}
     {% endif %}
 </div>
 {% endblock %}

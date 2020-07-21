@@ -17,8 +17,13 @@
     {% with url=url_for("email.index"), title="E-mails", image="email.png" %}
         {% include "_dashboard_page.html" %}
     {% endwith %}
-    {% if config.get("DEBUG") %}
+    {% if config.get("DEBUG") and not config.get("DEMO") %}
         {% with url=url_for("testing.index"), title="Testing", image="testing.png" %}
+            {% include "_dashboard_page.html" %}
+        {% endwith %}
+    {% endif %}
+    {% if config.get("DEMO") %}
+        {% with url=url_for("demo.index"), title="Demo", image="demo.png" %}
             {% include "_dashboard_page.html" %}
         {% endwith %}
     {% endif %}

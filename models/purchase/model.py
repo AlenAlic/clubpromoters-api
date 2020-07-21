@@ -27,7 +27,7 @@ class Purchase(db.Model, TrackModifications):
     purchase_datetime = db.Column(db.DateTime, default=datetime.utcnow())
     ticket_price = db.Column(db.Integer, nullable=False, default=0)
     party_id = db.Column(db.Integer, db.ForeignKey(f"{TABLE_PARTY}.party_id"))
-    party = db.relationship('Party', back_populates='purchases', single_parent=True)
+    party = db.relationship('Party', back_populates='purchases')
     tickets = db.relationship('Ticket', back_populates='purchase', cascade='all, delete-orphan')
     refunds = db.relationship('Refund', back_populates='purchase', cascade='all, delete-orphan')
     code_id = db.Column(db.Integer, db.ForeignKey(f"{TABLE_CODE}.code_id"))

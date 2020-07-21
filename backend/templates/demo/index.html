@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+<div class="row mt-3">
+    <div class="col-12 col-md-6">
+        <form method="POST" enctype="multipart/form-data">
+            <h3 class="mb-4">Demo e-mail address</h3>
+            {{ test_email_form.hidden_tag() }}
+            {{ forms.form_field(test_email_form.test_email) }}
+            <div class="mb-3"><small>In demo mode, all outgoing e-mails will be intercepted and sent to this address instead.</small></div>
+            {{ forms.form_field(test_email_form.save_email, class_="float-right") }}
+        </form>
+    </div>
+</div>
+<div class="row">
+    <div class="col-12">
+        <h3 class="mb-4">Create demo users</h3>
+        {% if not status["clubs_created"] %}
+            <form method="POST" enctype="multipart/form-data">
+                <div class="mb-3">Create demo club and hostess accounts, with the given password</div>
+                <div>
+                    {{ demo_club_form.hidden_tag() }}
+                    {{ forms.form_field(demo_club_form.password) }}
+                    {{ forms.form_field(demo_club_form.create_clubs, class_="float-right") }}
+                </div>
+            </form>
+        {% else %}
+            <div class="mb-3">Demo users have been created.</div>
+            <div>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Club</th>
+                            <th scope="col">E-mail</th>
+                            <th scope="col">Hostess e-mails</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in status["clubs"] %}
+                        <tr>
+                            <th scope="row">{{ user.club }}</th>
+                            <td>{{ user.email }}</td>
+                            {% for hostess in user.hostesses %}
+                                <td>{{ hostess.email }}{% if not loop.last %}<br />{% endif %}</td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Name</th>
+                            <th scope="col">E-mail</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in status["promoters"] %}
+                        <tr>
+                            <th scope="row">{{ user.first_name }} {{ user.last_name }}</th>
+                            <td>{{ user.email }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </div>
+</div>
+<div class="row mb-5 pb-5">
+    <div class="col-12">
+        <h3 class="mb-4">Create parties</h3>
+    </div>
+    <div class="col-12 col-md-6">
+        <form method="POST" enctype="multipart/form-data">
+            {{ create_current_parties_form.hidden_tag() }}
+            {{ forms.form_field(create_current_parties_form.create_current_parties, class_="float-right") }}
+        </form>
+    </div>
+    <div class="col-12 col-md-6">
+        <form method="POST" enctype="multipart/form-data">
+            {{ create_past_parties_form.hidden_tag() }}
+            {{ forms.form_field(create_past_parties_form.create_past_parties, class_="float-right") }}
+        </form>
+    </div>
+</div>
+{% endblock %}

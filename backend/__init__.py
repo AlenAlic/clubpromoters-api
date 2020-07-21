@@ -84,6 +84,10 @@ def register_blueprints(app):
         from backend.testing import bp as testing_bp
         app.register_blueprint(testing_bp, url_prefix="/testing")
 
+    if app.config.get("DEMO"):
+        from backend.demo import bp as demo_bp
+        app.register_blueprint(demo_bp, url_prefix="/demo")
+
     import apis
     apis.init_app(app)
 

@@ -54,9 +54,12 @@ class OrganizerAPIDashboardThisMonth(Resource):
     def get(self):
         """Get this month's financial data"""
         now = datetime.utcnow()
-        parties = Party.query.filter(Party.party_end_datetime < datetime.utcnow(),
-                                     func.year(Party.party_end_datetime) == func.year(now),
-                                     func.month(Party.party_end_datetime) == func.month(now)).all()
+        parties = Party.query.filter(
+            Party.club_owner == current_user,
+            Party.party_end_datetime < datetime.utcnow(),
+            func.year(Party.party_end_datetime) == func.year(now),
+            func.month(Party.party_end_datetime) == func.month(now),
+         ).all()
         tickets_sold = sum([p.income_number_tickets_sold for p in parties] if len(parties) else [0])
         commission = sum([p.income_club_owner_commission for p in parties] if len(parties) else [0])
         return {
@@ -75,9 +78,12 @@ class OrganizerAPIDashboardLastMonth(Resource):
         """Get last month's financial data"""
         now = datetime.utcnow()
         last_month = now.replace(month=now.month - 1 or 12)
-        parties = Party.query.filter(Party.party_end_datetime < datetime.utcnow(),
-                                     func.year(Party.party_end_datetime) == func.year(now),
-                                     func.month(Party.party_end_datetime) == func.month(last_month)).all()
+        parties = Party.query.filter(
+            Party.club_owner == current_user,
+            Party.party_end_datetime < datetime.utcnow(),
+            func.year(Party.party_end_datetime) == func.year(now),
+            func.month(Party.party_end_datetime) == func.month(last_month)
+        ).all()
         tickets_sold = sum([p.income_number_tickets_sold for p in parties] if len(parties) else [0])
         commission = sum([p.income_club_owner_commission for p in parties] if len(parties) else [0])
         return {

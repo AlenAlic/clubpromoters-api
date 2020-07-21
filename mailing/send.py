@@ -11,7 +11,7 @@ def send_async_email(app, msg):
 
 
 def send_email(subject, recipients, text_body, html_body, cc=None, bcc=None, attachments=None):
-    if current_app.config["DEBUG"] and config().test_email:
+    if (current_app.config["DEBUG"] or current_app.config["DEMO"]) and config().test_email:
         recipients = [config().test_email]
         cc = cc if cc else [config().test_email]
         bcc = bcc if bcc else [config().test_email]

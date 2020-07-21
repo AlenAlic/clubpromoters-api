@@ -15,7 +15,7 @@ class Refund(db.Model, TrackModifications):
     price = db.Column(db.Integer, nullable=False, default=0)
     refund_datetime = db.Column(db.DateTime, default=datetime.utcnow)
     purchase_id = db.Column(db.Integer, db.ForeignKey(f"{TABLE_PURCHASE}.purchase_id"))
-    purchase = db.relationship('Purchase', back_populates='refunds', single_parent=True)
+    purchase = db.relationship('Purchase', back_populates='refunds')
     mollie_refund_id = db.Column(db.String(128), nullable=False, default="")
     receipt_path = db.Column(db.String(512), nullable=True, default="")
     refund_number = db.Column(db.Integer, nullable=False, default=1)

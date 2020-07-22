@@ -4,8 +4,8 @@ Dear {{ purchase.first_name }},
 Thank you for purchasing tickets to {{ purchase.party.name }}.
 
 {{ purchase.party.party_start_datetime.strftime("%d %B") }} {{ purchase.party.party_start_datetime.strftime("%H:%M") }}-{{ purchase.party.party_end_datetime.strftime("%H:%M") }}
-{{ refund.purchase.party.location.address }}
-{{ refund.purchase.party.location.full_postal_code }} {{ refund.purchase.party.location.city }}
+{{ purchase.party.location.address }}
+{{ purchase.party.location.full_postal_code }} {{ purchase.party.location.city }}
 
 
 In the attachment you will find the receipt for this purchase.

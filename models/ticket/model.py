@@ -10,9 +10,9 @@ class Ticket(db.Model, TrackModifications):
     denied_entry = db.Column(db.Boolean, index=True, nullable=False, default=False)
     number = db.Column(db.Integer, nullable=False, default=0)
     purchase_id = db.Column(db.Integer, db.ForeignKey(f"{TABLE_PURCHASE}.purchase_id"))
-    purchase = db.relationship('Purchase', back_populates='tickets', single_parent=True)
+    purchase = db.relationship('Purchase', back_populates='tickets')
     refund_id = db.Column(db.Integer, db.ForeignKey(f"{TABLE_REFUND}.refund_id"))
-    refund = db.relationship('Refund', back_populates='tickets', single_parent=True)
+    refund = db.relationship('Refund', back_populates='tickets')
 
     def __repr__(self):
         return f"{self.ticket_id}"

@@ -42,7 +42,7 @@ class Refund(db.Model, TrackModifications):
 
     def generate_refund_receipt(self):
         conf = config()
-        path = os.path.join(current_app.receipts_folder, self.receipt_file_name)
+        path = os.path.join(current_app.receipts_folder, self.refund_receipt_file_name)
         HTML(string=render_template("receipts/receipt_template.html", purchase=self.purchase, conf=conf, refund=self),
              base_url=request.base_url).write_pdf(path)
         self.receipt_path = path

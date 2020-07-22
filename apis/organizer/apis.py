@@ -683,6 +683,7 @@ class OrganizerAPIRefund(Resource):
                 ref = Refund()
                 ref.price = euro_to_cents(amount)
                 ref.purchase = purchase
+                ref.refund_number = len(purchase.refunds)
                 data = {
                     "amount": {"value": mollie_value, "currency": "EUR"},
                     "description": f"test {datetime.utcnow().strftime('%d-%m-%Y %H:%M:%S')}"

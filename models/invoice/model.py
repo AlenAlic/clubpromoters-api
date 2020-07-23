@@ -91,18 +91,18 @@ class Invoice(db.Model, TrackModifications):
             self.invoice_vat_number = user.invoice_vat_number
 
     def generate_invoice(self):
-        path = os.path.join(current_app.invoices_folder, f"{self.invoice_number}.pdf")
+        path = os.path.join(self.directory, self.filename)
         HTML(string=render_template("invoices/invoice_template.html", invoice=self),
              base_url=request.base_url).write_pdf(path)
         self.path = path
 
     @property
     def directory(self):
-        return self.path.replace("\\", "/").rsplit("/", 1)[0]
+        return current_app.invoices_folder
 
     @property
     def filename(self):
-        return self.path.replace("\\", "/").rsplit("/", 1)[1]
+        return f"{self.invoice_number}.pdf"
 
     @property
     def promoter_invoice(self):

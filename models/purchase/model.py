@@ -121,6 +121,7 @@ class Purchase(db.Model, TrackModifications):
                 "end_date": datetime_browser(self.party.party_end_datetime),
             },
             "administration_costs": cents_to_euro(self.administration_costs),
+            "last_receipt_name": self.get_latest_receipt().receipt_file_name
         }
         if current_user.is_organizer:
             data.update({
@@ -142,6 +143,13 @@ class Purchase(db.Model, TrackModifications):
             })
         return data
 
+    def get_latest_receipt(self):
+        if len(self.refunds) == 0:
+            return self
+        else:
+            refund_id = max([r.refund_id for r in self.refunds])
+            return [r for r in self.refunds if r.refund_id == refund_id][0]
+
     @property
     def refunded_amount(self):
         return sum([r.price for r in self.refunds])
@@ -150,16 +158,20 @@ class Purchase(db.Model, TrackModifications):
     def receipt_file_name(self):
         return f"receipt.{self.purchase_id}.{self.receipt_number}.{self.receipt_reference}.pdf"
 
+    @property
+    def directory(self):
+        return current_app.receipts_folder
+
     def generate_receipt(self):
         conf = config()
-        path = os.path.join(current_app.receipts_folder, self.receipt_file_name)
+        path = os.path.join(self.directory, self.receipt_file_name)
         HTML(string=render_template("receipts/receipt_template.html", purchase=self, conf=conf),
              base_url=request.base_url).write_pdf(path)
         self.receipt_path = path
 
     @property
     def receipts_file_exists(self):
-        return os.path.exists(self.receipt_path)
+        return self.receipt_path and os.path.exists(self.receipt_path)
 
     @property
     def receipt_number(self):

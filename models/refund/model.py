@@ -1,7 +1,7 @@
 from ext import db
 from models.tables import TABLE_REFUND, TABLE_PURCHASE
 from models import TrackModifications
-from flask import current_app, render_template, request
+from flask import render_template, request
 from datetime import datetime
 from utilities import datetime_browser, cents_to_euro
 from models.configuration import config
@@ -33,16 +33,24 @@ class Refund(db.Model, TrackModifications):
         }
 
     @property
+    def receipts_file_exists(self):
+        return self.receipt_path and os.path.exists(self.receipt_path)
+
+    @property
     def receipt_reference(self):
         return f"{self.purchase.receipt_reference}-{self.refund_number}"
 
     @property
-    def refund_receipt_file_name(self):
+    def receipt_file_name(self):
         return f"receipt.{self.purchase_id}.{self.receipt_number}.{self.receipt_reference}.pdf"
 
-    def generate_refund_receipt(self):
+    @property
+    def directory(self):
+        return self.purchase.directory
+
+    def generate_receipt(self):
         conf = config()
-        path = os.path.join(current_app.receipts_folder, self.refund_receipt_file_name)
+        path = os.path.join(self.directory, self.receipt_file_name)
         HTML(string=render_template("receipts/receipt_template.html", purchase=self.purchase, conf=conf, refund=self),
              base_url=request.base_url).write_pdf(path)
         self.receipt_path = path

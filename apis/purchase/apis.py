@@ -2,7 +2,7 @@ from flask_restx import Namespace, Resource, abort, fields
 from ext import db
 from models import Party, Ticket, Purchase
 from models import get_code_from_request, code_required, requires_access_level, login_required, ACCESS_ORGANIZER
-from flask import url_for, request, current_app, Response
+from flask import url_for, request, current_app, Response, send_from_directory
 from mollie.api.client import Client
 from models.configuration import config
 from utilities import euro_to_cents
@@ -107,6 +107,25 @@ class PurchaseAPIQRCode(Resource):
             resp = Response(content_type="image/png")
             resp.data = purchase.qr_code_image()
             return resp
+        return abort(404)
+
+
+@api.route("/<int:purchase_id>/receipt/download")
+class DocumentsAPIInvoice(Resource):
+
+    @api.response(200, "Receipt")
+    @api.response(404, "Purchase not found")
+    @login_required
+    @requires_access_level(ACCESS_ORGANIZER)
+    def get(self, purchase_id):
+        """Terms and conditions"""
+        purchase = Purchase.query.filter(Purchase.purchase_id == purchase_id).first()
+        if purchase:
+            item = purchase.get_latest_receipt()
+            if not item.receipts_file_exists:
+                item.generate_receipt()
+                db.session.commit()
+            return send_from_directory(item.directory, filename=item.receipt_file_name, cache_timeout=0)
         return abort(404)
 
 

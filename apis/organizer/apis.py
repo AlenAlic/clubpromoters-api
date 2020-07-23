@@ -696,7 +696,7 @@ class OrganizerAPIRefund(Resource):
                     for ticket in tickets:
                         ticket.refund = ref
                     db.session.commit()
-                    ref.generate_refund_receipt()
+                    ref.generate_receipt()
                     db.session.commit()
                     send_refund_receipt(ref)
                     return purchase.json()

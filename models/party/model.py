@@ -72,6 +72,7 @@ class Party(db.Model, TrackModifications):
             "id": self.party_id,
             "club": self.club_owner.club,
             "name": self.name,
+            "is_active": self.is_active,
             "location": self.location.json() if self.location else None,
             "description": self.description,
             "ticket_price": cents_to_euro(self.ticket_price),

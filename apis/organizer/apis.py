@@ -7,7 +7,7 @@ from models import User, Location, Code, Party, PartyFile, Purchase, Refund, Tic
 from models.party.constants import NORMAL
 from datetime import datetime, timedelta
 from models.configuration import config
-from .functions import parties_list, purchases_list, commissions, this_months_invoices
+from .functions import parties_list, purchases_list, commissions, this_months_invoices, get_location_string
 from apis.auth.email import send_activation_email
 from utilities import activation_code, datetime_python
 from sqlalchemy import or_
@@ -185,7 +185,7 @@ class OrganizerAPICreateLocation(Resource):
         location.postal_code = api.payload["postal_code"]
         location.postal_code_letters = api.payload["postal_code_letters"].upper()
         location.city = api.payload["city"]
-        location.maps_url = api.payload["maps_url"]
+        location.maps_url = get_location_string(api.payload["maps_url"])
         db.session.add(location)
         db.session.commit()
         return
@@ -219,7 +219,7 @@ class OrganizerAPICreateLocation(Resource):
             location.postal_code = api.payload["postal_code"]
             location.postal_code_letters = api.payload["postal_code_letters"].upper()
             location.city = api.payload["city"]
-            location.maps_url = api.payload["maps_url"]
+            location.maps_url = get_location_string(api.payload["maps_url"])
             db.session.commit()
             return
         return abort(404)

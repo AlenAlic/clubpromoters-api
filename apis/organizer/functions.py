@@ -2,6 +2,7 @@ from models import Party, Purchase, User, Invoice
 from sqlalchemy import func, or_
 from models.user.constants import ACCESS_CLUB_OWNER, ACCESS_PROMOTER
 from datetime import datetime
+import re
 
 
 def parties_list(year, month):
@@ -39,3 +40,14 @@ def this_months_invoices(date):
                                                func.month(Invoice.date) == func.month(date))\
         .order_by(User.access, User.club, User.first_name).all()
     return invoices
+
+
+def get_location_string(maps_url):
+    if maps_url.startswith("http"):
+        return maps_url
+    else:
+        match = re.search("(?<=src=\")(.*?)(?=\")", maps_url)
+        if match:
+            span = match.span()
+            return maps_url[span[0]:span[1]]
+    return ""

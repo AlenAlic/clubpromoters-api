@@ -69,6 +69,12 @@ class Party(db.Model, TrackModifications):
     def editable(self):
         return len(self.paid_purchases) == 0
 
+    def final_image(self):
+        files = [f for f in self.files]
+        if len(files):
+            return files[-1]
+        return None
+
     def json(self):
         files = sorted([party_file for party_file in self.party_files], key=lambda x: x.order)
         files = [party_file.file for party_file in files]

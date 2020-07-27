@@ -46,6 +46,8 @@ def index():
 def purchase_nr(purchase_id):
     purchase = Purchase.query.filter(Purchase.purchase_id == purchase_id).first()
     if purchase:
+        purchase.generate_receipt()
+        db.session.commit()
         return render_template("receipts/receipt_template.html", purchase=purchase, conf=config())
     flash("Purchase not found")
     return redirect(url_for("receipt.index"))
@@ -57,6 +59,8 @@ def purchase_nr(purchase_id):
 def ticket_nr(purchase_id):
     purchase = Purchase.query.filter(Purchase.purchase_id == purchase_id).first()
     if purchase:
+        purchase.generate_tickets()
+        db.session.commit()
         return render_template("tickets/ticket_template.html", purchase=purchase, conf=config())
     flash("Purchase not found")
     return redirect(url_for("receipt.index"))
@@ -68,6 +72,8 @@ def ticket_nr(purchase_id):
 def refund_nr(refund_id):
     refund = Refund.query.filter(Refund.refund_id == refund_id).first()
     if refund:
+        refund.generate_receipt()
+        db.session.commit()
         return render_template("receipts/receipt_template.html", purchase=refund.purchase, conf=config(), refund=refund)
     flash("Refund not found")
     return redirect(url_for("receipt.index"))

@@ -2,13 +2,52 @@
 <html lang="en">
     {% include "tickets/ticket_template_head.html" %}
     <body>
-        <img style="float: left; width: 255px; height: 121px;" src="{{url_for('static', filename='ticket_logo.svg')}}" alt="logo" />
-        <div class="ticket-header">
-            <h2>Ticket</h2>
-            <h3>{{ purchase.created_at.strftime("%Y-%m-%d") }}</h3>
+        <div class="tickets-flex ticket-header-images">
+            <div class="logo">
+                <img style="width: 255px; height: 121px;" src="{{url_for('static', filename='ticket_logo.svg')}}" alt="logo" />
+                <div class="tickets-left-offset">
+                    <h2 style="margin-top: 92px;">{{ purchase.party.name }}</h2>
+                </div>
+            </div>
+            <div class="qr_code">
+                <h2 style="margin-top: 12px;">TICKET</h2>
+                <h2>{{ purchase.entrance_code() }}</h2>
+                <img style="width: 180px; height: 180px;" src="{{ url_for('api.purchase_purchase_apiqr_code', purchase_hash=purchase.hash) }}" alt="QR code">
+            </div>
         </div>
-        <div style="margin-top: 100px; text-align: center;">
-            <h1>TICKET INFO</h1>
+        <div class="tickets-flex tickets-left-offset tickets-right-offset">
+            <div>
+                <h3>Expected guests: {{ purchase.number_of_sold_tickets }}</h3>
+                <h3>Booked by: {{ purchase.full_name }}</h3>
+                <h3 style="text-indent: 108px;">{{ purchase.email }}</h3>
+            </div>
+            <div>
+                <div style="width: 152px; height: 62px; background-image: url({{ purchase.party.logo.url }}); background-size: cover; background-position: center center; background-repeat: no-repeat;"></div>
+            </div>
+        </div>
+        <div style="margin-top: 12px;" class="tickets-flex tickets-left-offset tickets-right-offset">
+            <div>
+                <h3>Time and place</h3>
+                <div>{{ purchase.party.party_start_datetime.strftime("%d %b %Y") }}</div>
+                <div>{{ purchase.party.party_start_datetime.strftime("%H:%M") }} - {{ purchase.party.party_end_datetime.strftime("%H:%M") }}</div>
+            </div>
+            <div>
+                <div style="min-width: 152px;">
+                    <h3>&nbsp;</h3>
+                    <div>{{ purchase.party.location.address }}</div>
+                    <div>{{ purchase.party.location.full_postal_code }}</div>
+                    <div>{{ purchase.party.location.city }}</div>
+                </div>
+            </div>
+        </div>
+        <div style="text-align: center;">
+            <div style="margin-top: 36px; margin-bottom: 12px;">
+                <h4>*DOOR CLOSES 1 HOUR BEFORE END OF EVENT*</h4>
+            </div>
+            <div style="width: 360px; height: 360px; margin: 0 auto; background-image: url({{ purchase.party.final_image().url }}); background-size: cover; background-position: center center; background-repeat: no-repeat;"></div>
+            <div style="margin-top: 24px;">
+                {{ conf.ticket_footer_text }}
+            </div>
         </div>
     </body>
 </html>

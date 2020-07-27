@@ -51,6 +51,17 @@ def purchase_nr(purchase_id):
     return redirect(url_for("receipt.index"))
 
 
+@bp.route("/<int:purchase_id>/ticket", methods=[GET])
+@login_required
+@requires_access_level(ACCESS_ADMIN, ACCESS_ORGANIZER)
+def ticket_nr(purchase_id):
+    purchase = Purchase.query.filter(Purchase.purchase_id == purchase_id).first()
+    if purchase:
+        return render_template("tickets/ticket_template.html", purchase=purchase, conf=config())
+    flash("Purchase not found")
+    return redirect(url_for("receipt.index"))
+
+
 @bp.route("/<int:refund_id>/refund", methods=[GET])
 @login_required
 @requires_access_level(ACCESS_ADMIN, ACCESS_ORGANIZER)

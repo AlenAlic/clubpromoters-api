@@ -532,11 +532,17 @@ class OrganizerAPIEditParty(Resource):
 
     @api.expect(api.model("CreateNewParty", {
         "name": fields.String(required=True),
+        "location_id": fields.Integer(required=True),
+        "start_date": fields.String(required=True),
+        "end_date": fields.String(required=True),
         "description": fields.String(),
         "number_of_tickets": fields.Integer(required=True),
         "ticket_price": fields.Float(required=True),
         "club_owner_commission": fields.Integer(required=True),
         "promoter_commission": fields.Integer(required=True),
+        "images": fields.List(fields.Integer(required=True)),
+        "logo_id": fields.Integer(required=True),
+        "interval": fields.Integer(required=True),
     }), validate=True)
     @api.response(200, "Party updated")
     @api.response(404, "Party not found")
@@ -547,12 +553,24 @@ class OrganizerAPIEditParty(Resource):
         party = Party.query.filter(Party.party_id == party_id).first()
         if party:
             party.name = api.payload["name"]
+            if party.editable:
+                party.location_id = api.payload["location_id"]
+                party.party_start_datetime = datetime_python(api.payload["start_date"])
+                party.party_end_datetime = datetime_python(api.payload["end_date"])
+            if "description" in api.payload:
+                party.description = api.payload["description"]
             party.num_available_tickets = api.payload["number_of_tickets"]
             party.ticket_price = euro_to_cents(api.payload["ticket_price"])
             party.club_owner_commission = api.payload["club_owner_commission"]
             party.promoter_commission = api.payload["promoter_commission"]
-            if "description" in api.payload:
-                party.description = api.payload["description"]
+            PartyFile.query.filter(PartyFile.party_id == party.party_id).delete()
+            for idx, file_id in enumerate(api.payload["images"]):
+                party_file = PartyFile()
+                party_file.party = party
+                party_file.file_id = file_id
+                party_file.order = idx
+            party.logo_id = api.payload["logo_id"]
+            party.interval = api.payload["interval"]
             db.session.commit()
             return
         return abort(404)

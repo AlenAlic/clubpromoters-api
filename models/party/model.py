@@ -65,12 +65,22 @@ class Party(db.Model, TrackModifications):
     def check_ticket_availability(self, requested_tickets):
         return self.num_remaining_tickets >= requested_tickets
 
+    @property
+    def editable(self):
+        return len(self.paid_purchases) == 0
+
     def json(self):
         files = sorted([party_file for party_file in self.party_files], key=lambda x: x.order)
         files = [party_file.file for party_file in files]
         data = {
             "id": self.party_id,
             "club": self.club_owner.club,
+            "club_owner": {
+                "id": self.club_owner.user_id,
+                "club": self.club_owner.club,
+                "locations": [loc.json() for loc in self.club_owner.locations],
+            },
+            "club_owner_id": self.club_owner.user_id,
             "name": self.name,
             "is_active": self.is_active,
             "location": self.location.json() if self.location else None,
@@ -90,6 +100,7 @@ class Party(db.Model, TrackModifications):
             "num_remaining_tickets": self.num_remaining_tickets,
             "num_tickets_denied_entry": len(self.tickets_denied_entry()),
             "num_tickets_refunded": len(self.tickets_refunded()),
+            "editable": self.editable,
         }
         if current_user.is_organizer:
             data.update({

@@ -43,7 +43,7 @@ class Invoice(db.Model, TrackModifications):
     invoice_country = db.Column(db.String(256))
     invoice_kvk_number = db.Column(db.String(128))
     invoice_vat_number = db.Column(db.String(128))
-    invoice_phone_number = db.Column(db.String(128), nullable=False)
+    invoice_phone_number = db.Column(db.String(128), nullable=False, default="")
     invoice_iban = db.Column(db.String(128), nullable=False)
     invoice_vat = db.Column(db.Integer(), nullable=False, default=21)
     user_id = db.Column(db.Integer, db.ForeignKey(f"{TABLE_USERS}.user_id"))

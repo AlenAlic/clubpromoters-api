@@ -101,6 +101,8 @@ MAIL_PORT=587
 MAIL_USE_TLS=1
 MAIL_USERNAME=$DEMO_EMAIL_ADDRESS
 MAIL_PASSWORD=$DEMO_EMAIL_PASSWORD
+
+MOLLIE_WEB_HOOK_URL=https://$DEMO_API_SUBDOMAIN/api/mollie/webhook
 EOL
 echo "Setting environment variables done============"
 

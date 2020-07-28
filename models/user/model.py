@@ -365,4 +365,5 @@ class User(UserMixin, Anonymous, db.Model, TrackModifications):
             parties = set([p.party for p in self.purchases if p.party.party_start_datetime.month == dt.month
                            and p.party.party_start_datetime.year == dt.year])
             parties = [p for p in parties if p.has_commission(self)]
+        parties = sorted(parties, key=lambda p: p.party_end_datetime)
         return parties

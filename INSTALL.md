@@ -59,3 +59,15 @@ When prompted, paste the password and press Enter.
 To update the api, just run
 
     demo-api-update
+
+
+## Add admin and set configuration
+Navigate to the root folder of whatever instance you wish add the user to, and run
+    
+    source venv/bin/activate
+
+    flask admin add -email email@example.com -p password -fn first_name -ln last_name
+    
+    flask admin config
+    
+    deactivate

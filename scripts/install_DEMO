@@ -1,0 +1,233 @@
+#!/bin/bash
+
+
+clear
+export DEMO_FOLDER=demo
+export DEMO_SECRET_KEY=$(python3 -c "import uuid; print(uuid.uuid4().hex)")
+export DEMO_PORT=4042
+export DEMO_SUPERVISOR=demo_api_clubpromoters
+export DEMO_API_FOLDER=$DEMO_FOLDER/clubpromoters-api
+
+export DOMAIN=clubpromoters.net
+export DEMO_SUBDOMAIN=demo.$DOMAIN
+export DEMO_API_SUBDOMAIN=api.$DEMO_SUBDOMAIN;
+
+export DEMO_EMAIL_PASSWORD=$DEMO_EMAIL_PASSWORD
+
+export DEMO_DB=clubpromoters_demo
+export DEMO_DB_USERNAME=$DEMO_DB
+export DEMO_DB_PASSWORD=$(python3 -c "import uuid; print(uuid.uuid4().hex)")
+
+echo "SETTINGS"
+echo "========="
+echo "folder:"
+echo $DEMO_FOLDER
+echo "secret key:"
+echo $DEMO_SECRET_KEY
+echo "port:"
+echo $DEMO_PORT
+echo "========="
+echo ""
+
+echo "DOMAINS"
+echo "========="
+echo "domain:"
+echo $DOMAIN
+echo "subdomain:"
+echo $DEMO_SUBDOMAIN
+echo "api subdomain:"
+echo $DEMO_API_SUBDOMAIN
+echo "========="
+echo ""
+
+echo "DATABASE"
+echo "========="
+echo "db:"
+echo $DEMO_DB
+echo "username:"
+echo $DEMO_DB_USERNAME
+echo "password:"
+echo $DEMO_DB_PASSWORD
+echo "========="
+echo ""
+
+echo "install TEST? (y/n)"
+read continue
+if [[ $continue = "y" ]]
+then
+
+
+echo "Installing SSL certificate===================="
+sudo certbot certonly --nginx -d $DEMO_SUBDOMAIN -d $DEMO_API_SUBDOMAIN
+echo "Installing SSL certificate complete==========="
+
+
+echo "Installing git repository====================="
+cd
+mkdir $DEMO_FOLDER
+cd $DEMO_FOLDER
+git clone https://github.com/AlenAlic/clubpromoters-api
+echo "Installing git repository complete============"
+
+
+echo "Installing venv==============================="
+cd && cd $DEMO_API_FOLDER
+python3 -m venv venv
+source venv/bin/activate
+pip install pip --upgrade
+pip install setuptools --upgrade
+pip install -r requirements.txt
+pip install gunicorn
+deactivate
+echo "Installing venv complete======================"
+
+
+echo "Setting environment variables================="
+bash -c 'cat > .env' << EOL
+DEMO=True
+SECRET_KEY=$DEMO_SECRET_KEY
+
+DATABASE_URI=mysql+pymysql://$DEMO_DB_USERNAME:$DEMO_DB_PASSWORD@localhost:3306/$DEMO_DB?charset=utf8mb4
+
+MAIL_DEFAULT_SENDER=no-reply@$DOMAIN
+
+PRETTY_URL=$DEMO_SUBDOMAIN
+ALLOWED_URLS=["https://$DEMO_SUBDOMAIN"]
+
+MAIL_SERVER=$DOMAIN
+MAIL_PORT=587
+MAIL_USE_TLS=1
+MAIL_USERNAME=no-reply@$DOMAIN
+MAIL_PASSWORD=$DEMO_EMAIL_PASSWORD
+EOL
+echo "Setting environment variables done============"
+
+
+echo "Create database and user======================"
+sudo mysql<<EOF
+CREATE DATABASE $DEMO_DB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER '$DEMO_DB_USERNAME'@'localhost' IDENTIFIED BY '$DEMO_DB_PASSWORD';
+GRANT ALL PRIVILEGES ON $DEMO_DB_USERNAME.* TO '$DEMO_DB_USERNAME'@'localhost';
+FLUSH PRIVILEGES;
+EOF
+echo "Created database and user====================="
+
+
+echo "Migrating database============================"
+cd && cd $DEMO_API_FOLDER
+source venv/bin/activate
+flask db upgrade
+deactivate
+echo "Database migration complete==================="
+
+
+echo "Setting up supervisor========================="
+sudo -E bash -c 'cat > /etc/supervisor/conf.d/$DEMO_SUPERVISOR.conf' << EOL
+[program:$DEMO_SUPERVISOR]
+command=/home/$USER/$DEMO_FOLDER/clubpromoters-api/venv/bin/gunicorn -b 127.0.0.1:$DEMO_PORT -w 3 run:app
+directory=/home/$USER/$DEMO_FOLDER/clubpromoters-api
+user=$USER
+autostart=true
+autorestart=true
+stopasgroup=true
+killasgroup=true
+EOL
+sudo supervisorctl reload
+echo "Setting up supervisor complete================"
+
+
+echo "Setting up nginx=============================="
+sudo -E bash -c 'cat > /etc/nginx/conf.d/$DEMO_API_SUBDOMAIN.conf' << EOL
+server {
+    listen 443 ssl http2;
+    server_name $DEMO_API_SUBDOMAIN;
+
+    location / {
+        proxy_pass http://127.0.0.1:4042;
+        proxy_redirect off;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+    }
+
+    access_log /var/log/$DEMO_API_SUBDOMAIN.access.log;
+    error_log /var/log/$DEMO_API_SUBDOMAIN.error.log;
+
+    ssl_certificate /etc/letsencrypt/live/$DEMO_SUBDOMAIN/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/$DEMO_SUBDOMAIN/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+    ssl_ecdh_curve secp521r1:secp384r1:prime256v1;
+
+}
+server {
+    server_name $DEMO_API_SUBDOMAIN;
+    return 301 https://\$host\$request_uri;
+}
+EOL
+sudo service nginx reload
+echo "Setting up nginx complete====================="
+
+
+echo "Creating update script========================"
+bash -c 'cat > scripts/update' << EOL
+cd && cd $DEMO_API_FOLDER
+
+echo "Creating database backup===="
+./cron/weekly
+echo "========================Done"
+
+echo "Checking out new version===="
+git pull
+echo "========================Done"
+
+echo "Installing requirements====="
+source venv/bin/activate
+pip install -r requirements.txt
+echo "========================Done"
+
+echo "Migrating Database=========="
+export FLASK_APP=run.py
+flask db upgrade
+deactivate
+echo "========================Done"
+
+echo "Restarting Services========="
+sudo supervisorctl restart $DEMO_SUPERVISOR
+sudo systemctl reload nginx
+echo "========================Done"
+
+cd && cd $DEMO_API_FOLDER
+EOL
+echo "Created update script========================="
+
+
+echo "Creating backup folder========================"
+cd && cd $DEMO_API_FOLDER
+mkdir -p backups/weekly
+echo "Created backup folder========================="
+
+
+echo "Creating cronjob files========================"
+cd && cd $DEMO_API_FOLDER
+mkdir cron
+cd cron
+bash -c 'cat > weekly' << EOL
+#! /bin/bash
+
+cd
+mysqldump --login-path=$DEMO_DB_USERNAME $DEMO_DB_USERNAME | xz -z > "/opt/$DEMO_FOLDER/clubpromoters-api/backups/weekly/backup-\$(date +%Y%m%d-%H%M).db.xz";
+EOL
+sudo chmod 774 weekly
+echo "Created cronjob files========================="
+
+
+
+cd && cd $DEMO_API_FOLDER
+
+
+
+else
+echo "Skipping DEMO installation."
+fi
+cd

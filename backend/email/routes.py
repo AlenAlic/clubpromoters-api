@@ -107,9 +107,7 @@ def template(group, name):
                 purchase = generate_dummy_purchase()
             return render_template(path, purchase=purchase)
         if name == NAME_REFUND:
-            purchase = Purchase.query.first()
-            if not purchase:
-                purchase = generate_dummy_purchase()
+            purchase = generate_dummy_purchase()
             return render_template(path, refund=purchase.refunds[0])
     if group == GROUP_INVOICES:
         if name == NAME_SEND_INVOICE:

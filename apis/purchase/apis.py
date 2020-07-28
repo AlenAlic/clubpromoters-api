@@ -58,13 +58,14 @@ class PurchaseAPIOrder(Resource):
                 db.session.commit()
                 mollie_client = Client()
                 mollie_client.set_api_key(conf.mollie)
+                scheme = "http" if current_app.config.get("LOCALHOST") else "https"
                 payment_data = {
                     "amount": {
                         "currency": "EUR",
                         "value": purchase.mollie_price()
                     },
                     "description": f"{purchase.mollie_description()}",
-                    "webhookUrl": url_for("api.mollie_mollie_api_webhook", _scheme="https", _external=True),
+                    "webhookUrl": url_for("api.mollie_mollie_api_webhook", _scheme=scheme, _external=True),
                     "redirectUrl": f'{current_app.config.get("BASE_URL")}/purchase/completed/{purchase.hash}',
                     "metadata": {
                         "purchase_id": str(purchase.purchase_id),

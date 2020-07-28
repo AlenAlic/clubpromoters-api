@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+<div class="row mt-3">
+    <div class="col-12 col-md-6">
+        <form method="POST" enctype="multipart/form-data" target="_blank">
+            <h3 class="mb-4">View tickets/receipt from Purchase</h3>
+            {{ purchase_form.hidden_tag() }}
+            {{ forms.form_field(purchase_form.purchase) }}
+            <div class="mb-3">
+                {{ forms.form_field(purchase_form.view_tickets) }}
+                {{ forms.form_field(purchase_form.view_receipt, class_="float-right") }}
+            </div>
+        </form>
+        <form method="POST" enctype="multipart/form-data" target="_blank">
+            <h3 class="mb-4">View receipt from Refund</h3>
+            {{ refund_form.hidden_tag() }}
+            {{ forms.form_field(refund_form.refund) }}
+            <div class="mb-3">
+                {{ forms.form_field(refund_form.view_receipt, class_="float-right") }}
+            </div>
+        </form>
+    </div>
+    <div class="col-12 col-md-6">
+        <form method="POST" enctype="multipart/form-data" target="_blank">
+            <h3 class="mb-4">View invoice</h3>
+            {{ invoice_form.hidden_tag() }}
+            {{ forms.form_field(invoice_form.invoice) }}
+            <div class="mb-3">
+                {{ forms.form_field(invoice_form.view_invoice, class_="float-right") }}
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

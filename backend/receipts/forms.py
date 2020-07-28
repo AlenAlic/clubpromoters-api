@@ -1,23 +1,10 @@
 from flask import request
 from flask_wtf import FlaskForm
-from wtforms import SubmitField, IntegerField, StringField, FloatField
+from wtforms import SubmitField, IntegerField, StringField, FloatField, TextAreaField
 from wtforms.validators import DataRequired, NumberRange
-from wtforms.ext.sqlalchemy.fields import QuerySelectField
-from models import Purchase
 from constants import GET
 from models.configuration import config
 from utilities import euro_to_cents, cents_to_euro
-
-
-class TestReceiptForm(FlaskForm):
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.purchase.query = Purchase.query
-
-    purchase = QuerySelectField("Purchase", validators=[DataRequired()])
-    view_receipt = SubmitField("View receipt")
-    view_tickets = SubmitField("View tickets")
 
 
 class ReceiptSettingsForm(FlaskForm):
@@ -55,3 +42,19 @@ class ReceiptSettingsForm(FlaskForm):
         conf.receipt_country = self.receipt_country.data
         conf.receipt_phone = self.receipt_phone.data
         conf.receipt_email = self.receipt_email.data
+
+
+class TicketSettingsForm(FlaskForm):
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        if request.method == GET:
+            conf = config()
+            self.ticket_footer_text.data = conf.ticket_footer_text
+
+    ticket_footer_text = TextAreaField("Ticket footer", render_kw={"rows": 4})
+    save_changes = SubmitField("Save changes")
+
+    def save(self):
+        conf = config()
+        conf.ticket_footer_text = self.ticket_footer_text.data

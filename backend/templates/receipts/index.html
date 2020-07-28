@@ -19,12 +19,11 @@
     </div>
     <div class="col-12 col-md-6">
         <form method="POST" enctype="multipart/form-data">
-            <h3 class="mb-4">View receipt from Purchase</h3>
-            {{ receipt_form.hidden_tag() }}
-            {{ forms.form_field(receipt_form.purchase) }}
+            <h3 class="mb-4">Ticket settings</h3>
+            {{ tickets_form.hidden_tag() }}
+            {{ forms.form_field(tickets_form.ticket_footer_text) }}
             <div class="mb-3">
-                {{ forms.form_field(receipt_form.view_tickets) }}
-                {{ forms.form_field(receipt_form.view_receipt, class_="float-right") }}
+                {{ forms.form_field(tickets_form.save_changes, class_="float-right") }}
             </div>
         </form>
     </div>

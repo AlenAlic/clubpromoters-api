@@ -16,7 +16,7 @@ def index():
         if form.validate_on_submit():
             user = User.query.filter_by(email=form.email.data).first()
             if user is None or not user.check_password(form.password.data):
-                flash("Invalid email or password", "alert-danger")
+                flash("Invalid email or password", "danger")
                 return redirect(url_for("main.index"))
             if user.is_active and (user.is_admin or user.is_organizer):
                 login_user(user)

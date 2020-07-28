@@ -80,6 +80,9 @@ def register_blueprints(app):
     from backend.settings import bp as settings_bp
     app.register_blueprint(settings_bp, url_prefix="/settings")
 
+    from backend.downloads import bp as downloads_bp
+    app.register_blueprint(downloads_bp, url_prefix="/downloads")
+
     if app.config.get("DEBUG"):
         from backend.testing import bp as testing_bp
         app.register_blueprint(testing_bp, url_prefix="/testing")

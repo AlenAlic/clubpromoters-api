@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+<h3 class="mt-3">Download files</h3>
+<form method="POST" enctype="multipart/form-data">
+    <div class="accordion" id="files">
+        <div class="card">
+            <div class="card-header" type="button" id="receipts" data-toggle="collapse" data-target="#collapseReceipts" aria-expanded="false" aria-controls="collapseReceipts">
+                <h4 class="mb-0">
+                    Receipts
+                </h4>
+            </div>
+            <div id="collapseReceipts" class="collapse" aria-labelledby="receipts" data-parent="#files">
+                {% for receipt in receipts %}
+                    <div class="px-2 py-1 d-flex flex-row justify-content-between border-bottom">
+                        <div class="align-middle">{{ receipt }}</div>
+                        <div>
+                            <button type="submit" class="btn btn-primary btn-sm" value="{{ receipt }}" name="receipt">Download</button>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header" type="button" id="tickets" data-toggle="collapse" data-target="#collapseTickets" aria-expanded="false" aria-controls="collapseTickets">
+                <h4 class="mb-0">
+                    Tickets
+                </h4>
+            </div>
+            <div id="collapseTickets" class="collapse" aria-labelledby="tickets" data-parent="#files">
+                {% for ticket in tickets %}
+                    <div class="mx-2 my-1 d-flex flex-row justify-content-between">
+                        <div>{{ ticket }}</div>
+                        <div>
+                            <button type="submit" class="btn btn-primary btn-sm" value="{{ ticket }}" name="ticket">Download</button>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header" type="button" id="invoices" data-toggle="collapse" data-target="#collapseInvoice" aria-expanded="false" aria-controls="collapseInvoice">
+                <h4 class="mb-0">
+                    Invoices
+                </h4>
+            </div>
+            <div id="collapseInvoice" class="collapse" aria-labelledby="invoices" data-parent="#files">
+                {% for invoice in invoices %}
+                    <div class="mx-2 my-1 d-flex flex-row justify-content-between">
+                        <div>{{ invoice }}</div>
+                        <div>
+                            <button type="submit" class="btn btn-primary" value="{{ invoice }}" name="invoice">Download</button>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+</form>
+{% endblock %}

@@ -19,6 +19,9 @@
     {% with url=url_for("admin.index"), title="Database", image="db.png" %}
         {% include "_dashboard_page.html" %}
     {% endwith %}
+    {% with url=url_for("downloads.index"), title="Download PDFs", image="downloads.png" %}
+        {% include "_dashboard_page.html" %}
+    {% endwith %}
     {% if config.get("DEBUG") and not config.get("DEMO") %}
         {% with url=url_for("testing.index"), title="Testing", image="testing.png" %}
             {% include "_dashboard_page.html" %}

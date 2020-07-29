@@ -7,6 +7,7 @@ from ext import db, migrate, login, mail, cors
 import commands
 import os
 from utilities import cents_to_euro
+import base64
 
 
 def create_app(config_class=Config):
@@ -25,16 +26,8 @@ def create_app(config_class=Config):
             current_user.last_seen = datetime.utcnow()
             db.session.commit()
 
-    # Template filters
-    # Converting prices to euro
-    @app.template_filter("euro_format")
-    def euro_format(p):
-        return "€{:,.2f}".format(p)
-
-    # Converting prices to euro
-    @app.template_filter("cents_to_euro")
-    def euro_cents_to_euro(c):
-        return cents_to_euro(c)
+    # Template filters and constants
+    add_template_filters_and_constants(app)
 
     # Create static folders (if not available)
     make_folders(app)
@@ -96,6 +89,24 @@ def register_blueprints(app):
 
     import apis
     apis.init_app(app)
+
+
+def add_template_filters_and_constants(app):
+    # Converting prices to euro
+    @app.template_filter("euro_format")
+    def euro_format(p):
+        return "€{:,.2f}".format(p)
+
+    # Converting prices to euro
+    @app.template_filter("cents_to_euro")
+    def euro_cents_to_euro(c):
+        return cents_to_euro(c)
+
+    # General email logo
+    @app.context_processor
+    def inject_email_logo():
+        path = os.path.join(app.static_folder, "email_logo.png")
+        return dict(email_logo=base64.b64encode(open(path, "rb").read()).decode())
 
 
 def make_folders(app):

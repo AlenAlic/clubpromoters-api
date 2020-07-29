@@ -2,8 +2,7 @@
 
 <tr style="background-color: #000000;">
     <td style="text-align: center; padding: 0 !important;">
-        <div style="position: relative;">
-            <img src="{{url_for('static', filename='email_logo.svg', _scheme=scheme, _external=True)}}" style="max-height: 60px; position: absolute; left: 0; top: 0;">
+        <div style="background-image: url('data:image/png;base64,{{ email_logo }}'); background-position: left top; background-repeat: no-repeat; background-size: auto 100%;">
             <h2 style="color: #fff; padding-top: 16px; padding-bottom: 16px; margin-bottom: 0;">
                 <span>{{ title }}</span>
             </h2>

@@ -102,12 +102,6 @@ def add_template_filters_and_constants(app):
     def euro_cents_to_euro(c):
         return cents_to_euro(c)
 
-    # General email logo
-    @app.context_processor
-    def inject_email_logo():
-        path = os.path.join(app.static_folder, "email_logo.png")
-        return dict(email_logo=base64.b64encode(open(path, "rb").read()).decode())
-
 
 def make_folders(app):
     generated = "generated"

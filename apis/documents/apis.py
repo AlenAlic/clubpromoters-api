@@ -1,9 +1,10 @@
 from flask_restx import Namespace, Resource, abort
-from flask import send_from_directory
+from flask import send_from_directory, current_app, send_file
 from flask_login import current_user
 from models.configuration import config
 from models import login_required, requires_access_level, ACCESS_ORGANIZER, ACCESS_CLUB_OWNER, ACCESS_PROMOTER
 from models import Invoice
+import os
 
 
 api = Namespace("documents", description="Website documents")
@@ -39,3 +40,14 @@ class DocumentsAPIInvoice(Resource):
                 return send_from_directory(invoice.directory, filename=invoice.filename, cache_timeout=0)
             return abort(403)
         return abort(404)
+
+
+@api.route("/email_logo")
+class EmailLogo(Resource):
+
+    @api.doc(security=None)
+    @api.response(200, "Image")
+    def get(self):
+        """Get e-mail logo"""
+        return send_file(os.path.join(current_app.static_folder, "email_logo.png"),
+                         mimetype='image/png', cache_timeout=86400)

@@ -4,10 +4,12 @@ from flask import request
 from ext import db
 from models import login_required, requires_access_level
 from models import User
-from models.user.constants import ACCESS_ORGANIZER, ACCESS_CLUB_OWNER
+from models.user.constants import ACCESS_ORGANIZER, ACCESS_CLUB_OWNER, ACCESS_PROMOTER
 from utilities import upload_image
 from constants import VUE_LANGUAGES, VUE_ENGLISH
 from models.invoice.constants import INVOICE_LANGUAGES, DUTCH
+from utilities import activation_code
+from apis.auth.email import send_activation_email
 
 
 api = Namespace("user", description="User")
@@ -53,6 +55,41 @@ class UserAPIProfile(Resource):
         current_user.phone_number = api.payload["phone_number"]
         db.session.commit()
         return current_user.profile
+
+
+@api.route("/register")
+class Register(Resource):
+
+    @api.doc(security=None)
+    @api.expect(api.model("Register", {
+        "email": fields.String(required=True),
+        "first_name": fields.String(required=True),
+        "last_name": fields.String(required=True),
+        "terms": fields.Boolean(required=True),
+        "type": fields.Integer(default=ACCESS_PROMOTER),
+    }), validate=True)
+    @api.response(200, "Registered")
+    @api.response(400, "Not accepted terms")
+    @api.response(409, "E-mail address taken")
+    def post(self):
+        """Register a new User"""
+        if api.payload["terms"]:
+            email = api.payload["email"]
+            user = User.query.filter(User.email.ilike(email)).first()
+            if not user:
+                account = User()
+                account.email = email
+                account.first_name = api.payload["first_name"]
+                account.last_name = api.payload["last_name"]
+                account.auth_code = activation_code()
+                account.access = api.payload["type"]
+                account.accepted_terms = True
+                db.session.add(account)
+                db.session.commit()
+                send_activation_email(account)
+                return
+            return abort(409)
+        return abort(400)
 
 
 @api.route("/address")

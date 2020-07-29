@@ -130,7 +130,7 @@ class AuthAPIResetPassword(Resource):
 class AuthAPIChangePassword(Resource):
 
     @api.expect(api.model("ChangePassword", {
-        "current_password": fields.String(required=True),
+        "password": fields.String(required=True),
         "new_password": fields.String(required=True),
         "repeat_password": fields.String(required=True),
     }), validate=True)
@@ -140,9 +140,9 @@ class AuthAPIChangePassword(Resource):
     @login_required
     def patch(self,):
         """Change password"""
-        if current_user.check_password(api.payload["current_password"]):
+        if current_user.check_password(api.payload["password"]):
             if check_password_requirements(api.payload["new_password"], api.payload["repeat_password"]) \
-                    and api.payload["new_password"] != api.payload["current_password"]:
+                    and api.payload["new_password"] != api.payload["password"]:
                 current_user.set_password(api.payload["new_password"], increment=True)
                 db.session.commit()
                 send_password_changed_email()

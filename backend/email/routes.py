@@ -58,8 +58,9 @@ def index():
     if request.method == POST and current_user.is_admin:
         if "send_test_email" in request.form and (current_app.config["DEBUG"] or current_app.config["DEMO"]):
             send_test_email()
+            flash("Test e-mail sent.")
         else:
-            flash("Could not send test e-mail.")
+            flash("Could not send test e-mail.", "warning")
         return redirect(url_for("email.index"))
     return render_template("email/index.html", email_list=email_list)
 

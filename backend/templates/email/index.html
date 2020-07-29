@@ -1,6 +1,14 @@
 {% extends "base.html" %}
 
 {% block app_content %}
+{% if current_user.is_admin and (config.get("DEBUG") or config.get("DEMO")) %}
+    <div class="mt-3">
+        <p>Send a test e-mail to the test email account.</p>
+        <form method="POST" enctype="multipart/form-data">
+            <input class="btn btn-primary"  name="send_test_email" type="submit" value="Send e-mail">
+        </form>
+    </div>
+{% endif %}
 <div class="row">
 {% for data in email_list %}
     {% with data=data %}

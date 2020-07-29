@@ -1,10 +1,11 @@
-from flask import render_template, redirect, url_for, flash
+from flask import render_template, redirect, url_for, flash, request, current_app
+from flask_login import current_user
 from backend.email import bp
-from constants import GET
+from constants import GET, POST
 from mailing.util import filtered_form
 from models import User, Purchase, Party, Invoice
 from utilities import activation_code
-from .functions import generate_dummy_purchase
+from .functions import generate_dummy_purchase, send_test_email
 
 
 GROUP_ERROR = "error"
@@ -21,15 +22,9 @@ GROUP_INVOICES = "invoices"
 NAME_SEND_INVOICE = "send_invoice"
 
 
-@bp.route("/", methods=[GET])
+@bp.route("/", methods=[GET, POST])
 def index():
     email_list = [
-        {
-            "group": GROUP_ERROR,
-            "emails": {
-                NAME_TRACE: "Server error"
-            }
-        },
         {
             "group": GROUP_AUTH,
             "emails": {
@@ -53,6 +48,19 @@ def index():
             }
         }
     ]
+    if current_user.is_admin:
+        email_list.insert(0, {
+            "group": GROUP_ERROR,
+            "emails": {
+                NAME_TRACE: "Server error"
+            }
+        })
+    if request.method == POST and current_user.is_admin:
+        if "send_test_email" in request.form and (current_app.config["DEBUG"] or current_app.config["DEMO"]):
+            send_test_email()
+        else:
+            flash("Could not send test e-mail.")
+        return redirect(url_for("email.index"))
     return render_template("email/index.html", email_list=email_list)
 
 

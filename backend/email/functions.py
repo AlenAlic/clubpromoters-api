@@ -1,5 +1,7 @@
+from flask import render_template
 from models import User, Purchase, Ticket, Party, Refund
 from datetime import datetime, timedelta
+from mailing import send_email
 
 
 def generate_dummy_purchase():
@@ -36,3 +38,11 @@ def generate_dummy_purchase():
     refund.refund_number = 1
     return purchase
 
+
+def send_test_email():
+    send_email(
+        f"Test e-mail: {datetime.utcnow().strftime('%d-%m-%Y, @%H:%M:%S')}",
+        recipients=[],
+        text_body=render_template("email/test/test.txt"),
+        html_body=render_template("email/test/test.html")
+    )

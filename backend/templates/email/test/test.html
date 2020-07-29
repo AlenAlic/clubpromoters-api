@@ -1,0 +1,21 @@
+{% extends "email/base.html" %}
+
+{% block body %}
+<table style="width: 100%; max-width: 800px; border: 1px solid lightgrey; margin-left: auto; margin-right: auto;">
+    <tbody>
+        {% with title="Test" %}
+            {% include "email/snippets/header.html" %}
+        {% endwith %}
+        <tr class="table-main-body">
+            <td style="padding-bottom: 16px; text-align: center;">
+                <p>Dear tester,</p>
+                <br/>
+                <p style="max-width: 480px; margin-left: auto; margin-right: auto;">
+                    This is a test mail.
+                </p>
+                {% include "email/snippets/closing.html" %}
+            </td>
+        </tr>
+    </tbody>
+</table>
+{% endblock %}

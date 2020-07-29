@@ -1,0 +1,9 @@
+Dear tester,
+
+
+This is a test mail.
+
+
+Kind regards,
+
+the {{ config.PRETTY_URL }} team.

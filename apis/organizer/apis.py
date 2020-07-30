@@ -150,6 +150,7 @@ class OrganizerAPICreateClubOwner(Resource):
         account.auth_code = activation_code()
         account.access = ACCESS_CLUB_OWNER
         account.business_entity = True
+        account.accepted_terms = True
         db.session.add(account)
         db.session.commit()
         send_activation_email(account)
@@ -248,6 +249,7 @@ class OrganizerAPICreateHostess(Resource):
         account.access = ACCESS_HOSTESS
         account.working = True
         account.club_owner = club_owner
+        account.accepted_terms = True
         db.session.add(account)
         db.session.commit()
         send_activation_email(account)
@@ -277,6 +279,7 @@ class OrganizerAPICreatPromoter(Resource):
         account.code = Code.query.filter(Code.code_id == api.payload["code_id"]).first()
         account.auth_code = activation_code()
         account.access = ACCESS_PROMOTER
+        account.accepted_terms = True
         db.session.add(account)
         db.session.commit()
         send_activation_email(account)

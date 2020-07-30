@@ -57,6 +57,7 @@ def index():
                     club_owner.country = data["invoice"]["country"]
                     club_owner.invoice_kvk_number = data["invoice"]["kvk"]
                     club_owner.invoice_vat_number = data["invoice"]["vat"]
+                    club_owner.accepted_terms = True
                     db.session.add(club_owner)
                     db.session.flush()
                     directory = os.path.join(current_app.uploads_folder, f"{club_owner.user_id}")
@@ -122,6 +123,7 @@ def index():
                     if promoter.business_entity:
                         promoter.invoice_kvk_number = data["invoice"]["kvk"]
                         promoter.invoice_vat_number = data["invoice"]["vat"]
+                    promoter.accepted_terms = True
                     db.session.add(promoter)
                     code = Code()
                     code.code = data["code"]

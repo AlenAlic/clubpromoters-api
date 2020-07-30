@@ -24,6 +24,20 @@ class DocumentsAPITerms(Resource):
         return abort(404)
 
 
+@api.route("/promoter_terms")
+class DocumentsAPIPromoterTerms(Resource):
+
+    @api.doc(security=None)
+    @api.response(200, "Promoter erms and conditions")
+    @api.response(404, "Terms and conditions not found")
+    def get(self):
+        """Promoter terms and conditions"""
+        file = config().promoter_terms
+        if file:
+            return send_from_directory(file.directory, filename=file.filename, cache_timeout=0)
+        return abort(404)
+
+
 @api.route("/invoice/<int:invoice_id>")
 class DocumentsAPIInvoice(Resource):
 

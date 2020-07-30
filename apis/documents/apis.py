@@ -33,7 +33,7 @@ class DocumentsAPIInvoice(Resource):
     @login_required
     @requires_access_level(ACCESS_ORGANIZER, ACCESS_CLUB_OWNER, ACCESS_PROMOTER)
     def get(self, invoice_id):
-        """Terms and conditions"""
+        """Get a specific invoice"""
         invoice = Invoice.query.filter(Invoice.invoice_id == invoice_id).first()
         if invoice:
             if current_user.access == ACCESS_ORGANIZER or current_user == invoice.user:

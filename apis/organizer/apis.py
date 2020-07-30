@@ -192,7 +192,7 @@ class OrganizerAPICreateLocation(Resource):
 
 
 @api.route("/update_location/<int:location_id>")
-class OrganizerAPICreateLocation(Resource):
+class OrganizerAPIUpdateLocation(Resource):
 
     @api.expect(api.model("NewLocation", {
         "name": fields.String(required=True),
@@ -255,7 +255,7 @@ class OrganizerAPICreateHostess(Resource):
 
 
 @api.route("/create_new_promoter")
-class OrganizerAPICreateHostess(Resource):
+class OrganizerAPICreatPromoter(Resource):
 
     @api.expect(api.model("NewPromoter", {
         "email": fields.String(required=True),

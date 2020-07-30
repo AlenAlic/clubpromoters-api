@@ -1,10 +1,8 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
-from constants import LOCAL_TIMEZONE
 from models import Party
 from datetime import datetime, timedelta
-import pytz
 from random import choice
 from .data import CURRENT_PARTY_DAYS, PAST_PARTY_DAYS
 from .functions import create_party, preset_start_datetime

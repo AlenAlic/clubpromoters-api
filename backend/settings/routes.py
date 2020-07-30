@@ -45,7 +45,7 @@ def index():
                 db.session.commit()
                 flash("New promoter terms uploaded.")
             return redirect(url_for("settings.index"))
-        if remove_promoter_terms_form.remove_promoter_terms.name in request.form:
+        if remove_promoter_terms_form.promoter_remove_terms.name in request.form:
             conf.promoter_terms_id = None
             db.session.commit()
             flash("Promoter terms removed. There are no terms available to view.", "warning")

@@ -23,8 +23,11 @@ class OrganizerAPIDashboardGraphs(Resource):
     def get(self):
         """Get this year's financial data"""
         now = datetime.utcnow()
-        parties = Party.query.filter(Party.party_end_datetime < datetime.utcnow(),
-                                     func.year(Party.party_end_datetime) == func.year(now)).all()
+        parties = Party.query.filter(
+            Party.club_owner == current_user,
+            Party.party_end_datetime < datetime.utcnow(),
+            func.year(Party.party_end_datetime) == func.year(now)
+        ).all()
         months = []
         tickets_sold = []
         commission = []

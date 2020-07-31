@@ -92,6 +92,17 @@ class Register(Resource):
         return abort(400)
 
 
+@api.route("/accept_terms")
+class Register(Resource):
+
+    @api.response(200, "Accepted terms")
+    def post(self):
+        """Accept terms"""
+        current_user.accepted_terms = True
+        db.session.commit()
+        return
+
+
 @api.route("/address")
 class UserAPIAddress(Resource):
 

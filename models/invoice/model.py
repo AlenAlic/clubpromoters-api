@@ -9,7 +9,7 @@ from weasyprint import HTML
 import os
 from models.configuration import config
 from models.user.constants import ACCESS_CLUB_OWNER, ACCESS_PROMOTER
-from utilities import datetime_browser
+from utilities import datetime_browser, last_month_datetime
 
 
 class Invoice(db.Model, TrackModifications):
@@ -153,7 +153,7 @@ class Invoice(db.Model, TrackModifications):
 
     @property
     def delivery_datetime(self):
-        return self.date.replace(month=self.date.month - 1 or 12)
+        return last_month_datetime(self.date.year, self.date.month)
 
     @property
     def delivery_date(self):

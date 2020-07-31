@@ -7,7 +7,7 @@ from apis.auth.email import send_activation_email
 from utilities import activation_code
 from datetime import datetime
 from .functions import parties_list
-from utilities import cents_to_euro
+from utilities import cents_to_euro, last_month_datetime
 from sqlalchemy import func
 
 
@@ -80,7 +80,7 @@ class OrganizerAPIDashboardLastMonth(Resource):
     def get(self):
         """Get last month's financial data"""
         now = datetime.utcnow()
-        last_month = now.replace(month=now.month - 1 or 12)
+        last_month = last_month_datetime(now.year, now.month)
         parties = Party.query.filter(
             Party.club_owner == current_user,
             Party.party_end_datetime < datetime.utcnow(),

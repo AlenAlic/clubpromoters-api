@@ -1,5 +1,5 @@
 from flask import current_app
-from datetime import datetime
+from datetime import datetime, timedelta
 from constants import DATETIME_FORMAT
 from random import choice
 from string import ascii_letters
@@ -44,11 +44,7 @@ def format_euro(price):
 
 def last_month_datetime(year, month):
     last_month = datetime(year, month, 1)
-    previous_month = last_month.month - 1 or 12
-    last_month = last_month.replace(month=previous_month)
-    if previous_month == 12:
-        last_month.replace(year=last_month.year - 1)
-    return last_month
+    return last_month - timedelta(days=1)
 
 
 def file_extension(filename):

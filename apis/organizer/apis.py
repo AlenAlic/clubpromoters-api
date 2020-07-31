@@ -110,7 +110,7 @@ class OrganizerAPIDashboardLastMonth(Resource):
     def get(self):
         """Get last month's financial data"""
         now = datetime.utcnow()
-        last_month = now.replace(month=now.month - 1 or 12)
+        last_month = last_month_datetime(now.year, now.month)
         purchases = Purchase.query.filter(Purchase.purchase_datetime < datetime.utcnow(),
                                           Purchase.status == STATUS_PAID,
                                           func.year(Purchase.purchase_datetime) == func.year(now),

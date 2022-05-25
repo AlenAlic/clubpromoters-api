@@ -33,7 +33,7 @@ mollie-api-python==2.2.4
 oauthlib==3.1.0
 Pillow==7.1.2
 pycparser==2.20
-PyJWT==1.7.1
+PyJWT==2.4.0
 PyMySQL==0.9.3
 Pyphen==0.9.5
 pypng==0.0.20
